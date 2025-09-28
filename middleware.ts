@@ -8,13 +8,11 @@ export default auth((req) => {
   const isPublicRoute = ["/auth/login", "/auth/register"].includes(
     nextUrl.pathname
   );
-  const isAuthRoute = ["/auth/login", "/auth/register"].includes(
-    nextUrl.pathname
-  );
+  const isAuthRoute = ["/login", "/register"].includes(nextUrl.pathname);
 
-  if (!isLoggedIn && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/auth/login", nextUrl));
-  }
+  // if (!isLoggedIn && !isPublicRoute) {
+  //   return NextResponse.redirect(new URL("/register", nextUrl));
+  // }
 
   return NextResponse.next();
 });

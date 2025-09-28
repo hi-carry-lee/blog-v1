@@ -3,30 +3,11 @@
 import { Search, Sun, Moon, Triangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useTheme } from "@/hooks/useTheme";
 
 export function Navbar() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const theme = localStorage.getItem("theme");
-    setIsDark(theme === "dark");
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    if (newTheme) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <nav className="flex items-center justify-between px-16 py-4 bg-background border-b border-border">
@@ -49,24 +30,24 @@ export function Navbar() {
 
       <div className="flex items-center gap-6">
         <nav className="flex items-center gap-6">
-          <a
-            href="#"
+          <Link
+            href="/"
             className="text-foreground hover:text-primary transition-colors"
           >
             Home
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            href="/posts"
             className="text-foreground hover:text-primary transition-colors"
           >
             Posts
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            href="/about"
             className="text-foreground hover:text-primary transition-colors"
           >
             About
-          </a>
+          </Link>
         </nav>
 
         <Button
@@ -78,9 +59,11 @@ export function Navbar() {
           {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </Button>
 
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          Login
-        </Button>
+        <Link href="/login">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            Login
+          </Button>
+        </Link>
       </div>
     </nav>
   );
