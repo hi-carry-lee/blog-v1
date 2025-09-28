@@ -1,83 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Triangle } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "@/hooks/useTheme";
+import { useAppTheme } from "@/lib/hooks/useAppTheme";
+import { registerSchema, type RegisterFormData } from "@/lib/zod-validations";
+import { registerUser } from "@/lib/actions/user";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
-  useTheme(); // Initialize theme
+  useAppTheme(); // Initialize theme
 
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [errors, setErrors] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newErrors = {
-      username: "",
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
-    };
+    },
+  });
 
-    // Basic validation
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    }
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      const result = await registerUser(data);
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-
-    // If no errors, proceed with registration
-    if (!Object.values(newErrors).some((error) => error)) {
-      console.log("Registration data:", formData);
-      // Here you would typically call your registration API
+      if (result.success) {
+        toast.success(result.message || "Account created successfully!", {
+          description: "You can now sign in to your account.",
+        });
+        form.reset();
+      } else {
+        toast.error(result.error || "Registration failed", {
+          description: "Please check your information and try again.",
+        });
+      }
+    } catch (error) {
+      // TODO use logger
+      console.error("Registration error:", error);
+      toast.error("An unexpected error occurred", {
+        description: "Please try again later.",
+      });
     }
   };
 
@@ -105,113 +80,103 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Username
-              </label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.username ? "border-red-500" : ""
-                }`}
-                placeholder="Enter your username"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Name Field */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your name"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.username && (
-                <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-              )}
-            </div>
 
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Email address
-              </label>
-              <Input
-                id="email"
+              {/* Email Field */}
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.email ? "border-red-500" : ""
-                }`}
-                placeholder="Enter your email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email address</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Password
-              </label>
-              <Input
-                id="password"
+              {/* Password Field */}
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.password ? "border-red-500" : ""
-                }`}
-                placeholder="Enter your password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              )}
-            </div>
 
-            {/* Confirm Password Field */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Confirm Password
-              </label>
-              <Input
-                id="confirmPassword"
+              {/* Confirm Password Field */}
+              <FormField
+                control={form.control}
                 name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.confirmPassword ? "border-red-500" : ""
-                }`}
-                placeholder="Confirm your password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm your password"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
 
-            {/* Sign Up Button */}
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 text-base"
-            >
-              Sign Up
-            </Button>
-          </form>
+              {/* Sign Up Button */}
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 text-base disabled:opacity-50"
+              >
+                {form.formState.isSubmitting
+                  ? "Creating account..."
+                  : "Sign Up"}
+              </Button>
+            </form>
+          </Form>
 
           {/* Login Link */}
           <div className="text-center mt-6">

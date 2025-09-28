@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export function useTheme() {
+export function useAppTheme() {
   const [isDark, setIsDark] = useState(false);
 
   // Initialize theme on mount
@@ -36,5 +36,6 @@ export function useTheme() {
   return {
     isDark,
     toggleTheme,
+    theme: isDark ? "dark" : "light",
   };
 }

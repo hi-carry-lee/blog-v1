@@ -4,10 +4,10 @@ import { Search, Sun, Moon, Triangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useTheme } from "@/hooks/useTheme";
+import { useAppTheme } from "@/lib/hooks/useAppTheme";
 
 export function Navbar() {
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useAppTheme();
 
   return (
     <nav className="flex items-center justify-between px-16 py-4 bg-background border-b border-border">

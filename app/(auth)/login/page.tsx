@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Triangle } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "@/hooks/useTheme";
+import { useAppTheme } from "@/lib/hooks/useAppTheme";
 
 export default function LoginPage() {
-  useTheme(); // Initialize theme
+  useAppTheme(); // Initialize theme
 
   const [formData, setFormData] = useState({
     email: "",
