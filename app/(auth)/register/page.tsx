@@ -18,10 +18,12 @@ import Link from "next/link";
 import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { registerSchema, type RegisterFormData } from "@/lib/zod-validations";
 import { registerUser } from "@/lib/actions/user";
-import { toast } from "sonner";
+import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 
 export default function RegisterPage() {
   useAppTheme(); // Initialize theme
+
+  const { success, error } = useSemanticToast();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -38,21 +40,21 @@ export default function RegisterPage() {
       const result = await registerUser(data);
 
       if (result.success) {
-        toast.success(result.message || "Account created successfully!", {
-          description: "You can now sign in to your account.",
-        });
+        success(
+          result.message || "Account created successfully!",
+          "You can now sign in to your account."
+        );
         form.reset();
       } else {
-        toast.error(result.error || "Registration failed", {
-          description: "Please check your information and try again.",
-        });
+        error(
+          result.error || "Registration failed",
+          "Please check your information and try again."
+        );
       }
-    } catch (error) {
+    } catch (err) {
       // TODO use logger
-      console.error("Registration error:", error);
-      toast.error("An unexpected error occurred", {
-        description: "Please try again later.",
-      });
+      console.error("Registration error:", err);
+      error("An unexpected error occurred", "Please try again later.");
     }
   };
 

@@ -12,13 +12,10 @@ export const registerSchema = z
   .object({
     name: z.string().min(2, "At least 2 characters"),
     email: z.email("Please enter a valid email address"),
-    password: z
-      .string()
-      .min(6, "At least 6 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain uppercase and lowercase letters and numbers"
-      ),
+    password: z.string().min(6, "At least 6 characters"),
+    // .regex(
+    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+    //   "Password must contain uppercase and lowercase letters and numbers")
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
