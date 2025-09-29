@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
-  const isApiAuthRoute = nextUrl.pathname.startsWith("/api");
-  const isPublicRoute = ["/auth/login", "/auth/register"].includes(
-    nextUrl.pathname
-  );
-  const isAuthRoute = ["/login", "/register"].includes(nextUrl.pathname);
+// 为 middleware 创建专门的 auth 实例，只使用基础配置
+const { auth } = NextAuth(authConfig);
 
-  // if (!isLoggedIn && !isPublicRoute) {
-  //   return NextResponse.redirect(new URL("/register", nextUrl));
-  // }
-
+export default auth(() => {
+  // 路由保护逻辑完全由 auth.config.ts 中的 authorized 回调处理
   return NextResponse.next();
 });
 

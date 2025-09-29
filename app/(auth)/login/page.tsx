@@ -1,78 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Triangle } from "lucide-react";
 import Link from "next/link";
 import { useAppTheme } from "@/lib/hooks/useAppTheme";
+import { loginSchema, type LoginFormData } from "@/lib/zod-validations";
+import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   useAppTheme(); // Initialize theme
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const { success, error } = useSemanticToast();
 
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newErrors = {
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
       email: "",
       password: "",
-    };
+    },
+  });
 
-    // Basic validation
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
-
-    setErrors(newErrors);
-
-    // If no errors, proceed with login
-    if (!Object.values(newErrors).some((error) => error)) {
-      console.log("Login data:", formData);
-      // Here you would typically call your login API
+      if (result?.error) {
+        error(
+          "Login failed",
+          "Please check your email and password and try again."
+        );
+      } else if (result?.ok) {
+        success(
+          "Login successful!",
+          "Welcome back! Redirecting to dashboard..."
+        );
+        // Redirect will be handled by NextAuth middleware
+        window.location.href = "/"; // or your desired redirect path
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      error("An unexpected error occurred", "Please try again later.");
     }
   };
 
-  const handleGitHubLogin = () => {
-    console.log("GitHub login clicked");
-    // Here you would implement GitHub OAuth login
+  const handleGitHubLogin = async () => {
+    try {
+      await signIn("github", { callbackUrl: "/" });
+    } catch (err) {
+      console.error("GitHub login error:", err);
+      error("GitHub login failed", "Please try again later.");
+    }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google login clicked");
-    // Here you would implement Google OAuth login
+  const handleGoogleLogin = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/" });
+    } catch (err) {
+      console.error("Google login error:", err);
+      error("Google login failed", "Please try again later.");
+    }
   };
 
   const handleForgotPassword = () => {
@@ -104,74 +107,72 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Email
-              </label>
-              <Input
-                id="email"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email Field */}
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.email ? "border-red-500" : ""
-                }`}
-                placeholder="Enter your email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
-            </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-card-foreground mb-2"
-              >
-                Password
-              </label>
-              <Input
-                id="password"
+              {/* Password Field */}
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full placeholder:text-gray-400 ${
-                  errors.password ? "border-red-500" : ""
-                }`}
-                placeholder="Enter your password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        className="w-full placeholder:text-gray-400"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              )}
-            </div>
 
-            {/* Forgot Password Link */}
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-primary hover:text-primary/90 text-sm font-medium"
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-primary hover:text-primary/90 text-sm font-medium"
+                  disabled={form.formState.isSubmitting}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              {/* Login Button */}
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 text-base disabled:opacity-50"
               >
-                Forgot Password?
-              </button>
-            </div>
-
-            {/* Login Button */}
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 text-base"
-            >
-              Log In
-            </Button>
-          </form>
+                {form.formState.isSubmitting ? "Signing in..." : "Log In"}
+              </Button>
+            </form>
+          </Form>
 
           {/* Divider */}
           <div className="relative my-6">
@@ -191,7 +192,8 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               onClick={handleGitHubLogin}
-              className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3"
+              disabled={form.formState.isSubmitting}
+              className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3 disabled:opacity-50"
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -212,7 +214,8 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               onClick={handleGoogleLogin}
-              className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3"
+              disabled={form.formState.isSubmitting}
+              className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3 disabled:opacity-50"
             >
               <svg
                 className="w-5 h-5 mr-2"

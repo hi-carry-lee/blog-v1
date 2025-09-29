@@ -38,7 +38,9 @@ async function cleanupPrisma() {
   await prisma.$disconnect();
 }
 
-// 应用程序退出时进行清理
-process.on("beforeExit", cleanupPrisma);
-process.on("SIGINT", cleanupPrisma);
-process.on("SIGTERM", cleanupPrisma);
+// 应用程序退出时进行清理 (仅在 Node.js 环境中)
+if (typeof process !== "undefined" && process.on) {
+  process.on("beforeExit", cleanupPrisma);
+  process.on("SIGINT", cleanupPrisma);
+  process.on("SIGTERM", cleanupPrisma);
+}
