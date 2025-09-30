@@ -110,7 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig.callbacks,
     // 只保留需要数据库操作的 callbacks
     async signIn({ user, account }) {
-      // Credentials provider
+      // Credentials 登录，直接返回true，不会执行下面的逻辑，所以用户的头像使用user表中的头像
       if (account?.provider === "credentials") {
         return true;
       }
@@ -205,6 +205,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return true;
     },
+
+    // credentials登录，oauth登录，刷新浏览器都会执行这里，但是执行逻辑不一样
     async jwt({ token, user, account }) {
       // 首次登录时，user 对象存在，需要初始化基本信息
       if (user) {
@@ -215,7 +217,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // 每次有account信息时都要检查并更新provider相关信息
-      // 这确保切换不同provider登录时会更新头像和名字
+      // 这确保：切换 不同provider登录时会更新头像和名字
+      // credentials登录时，刷新浏览器不会触发这里执行，因为刷新时没有Account信息
       if (account) {
         if (isOAuthProvider(account.provider)) {
           // OAuth登录：从Account表获取provider特定信息
@@ -260,6 +263,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // 页面刷新时：根据存储的provider信息获取对应的头像和名字
+      // credentials登录，在刷新的时候，这里也不满足，但是oauth登录，刷新时会执行这里
       if (
         !account &&
         token.currentProvider &&
