@@ -7,6 +7,15 @@ import { compareSync } from "bcryptjs";
 import { authConfig } from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
+// 扩展用户类型以包含自定义字段
+interface ExtendedUser {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  role: string;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
@@ -36,6 +45,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               id: user.id,
               name: user.name,
               email: user.email,
+              image: user.image,
+              role: user.role,
             };
         }
         return null;
@@ -67,18 +78,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.error("OAuth user missing email");
           return false;
         }
-
         return true;
       }
 
       return true;
     },
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      // 首次登录时，user 对象存在
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image;
+        // 安全地处理 role 字段
+        token.role = (user as ExtendedUser).role || "user";
+      }
       return token;
     },
+
     async session({ session, token }) {
-      if (token) session.user.id = token.id as string;
+      // 将 token 中的用户数据传递到 session
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+        session.user.image = token.image as string | null;
+        // 安全地扩展 session.user 对象
+        Object.assign(session.user, { role: token.role as string });
+      }
       return session;
     },
   },

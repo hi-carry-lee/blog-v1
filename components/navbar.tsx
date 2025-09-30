@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useAppTheme } from "@/lib/hooks/useAppTheme";
+import { useSession } from "next-auth/react";
+import UserAvatar from "./user-avatar";
 
 export function Navbar() {
   const { isDark, toggleTheme } = useAppTheme();
+  const { data: session } = useSession();
 
   return (
     <nav className="flex items-center justify-between px-16 py-4 bg-background border-b border-border">
@@ -59,11 +62,16 @@ export function Navbar() {
           {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </Button>
 
-        <Link href="/login">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            Login
-          </Button>
-        </Link>
+        {/* 条件渲染：登录状态显示头像，未登录显示登录按钮 */}
+        {session?.user ? (
+          <UserAvatar user={session.user} />
+        ) : (
+          <Link href="/login">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              Login
+            </Button>
+          </Link>
+        )}
       </div>
     </nav>
   );

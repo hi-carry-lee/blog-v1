@@ -19,9 +19,13 @@ import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { loginSchema, type LoginFormData } from "@/lib/zod-validations";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   useAppTheme(); // Initialize theme
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const { success, error } = useSemanticToast();
 
@@ -51,8 +55,8 @@ export default function LoginPage() {
           "Login successful!",
           "Welcome back! Redirecting to dashboard..."
         );
-        // Redirect will be handled by NextAuth middleware
-        window.location.href = "/"; // or your desired redirect path
+        // 使用 replace 进行跳转，可以避免用户返回登录页
+        router.replace(callbackUrl);
       }
     } catch (err) {
       console.error("Login error:", err);
