@@ -2,7 +2,12 @@
 
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { registerSchema, type RegisterFormData } from "@/lib/zod-validations";
+import {
+  registerSchema,
+  type RegisterFormData,
+  profileUpdateSchema,
+  type ProfileUpdateFormData,
+} from "@/lib/zod-validations";
 
 export async function registerUser(data: RegisterFormData) {
   try {
@@ -50,6 +55,105 @@ export async function registerUser(data: RegisterFormData) {
     };
   } catch (error) {
     console.error("Registration error:", error);
+
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+    };
+  }
+}
+
+export async function updateUserProfile(
+  data: ProfileUpdateFormData,
+  userId: string
+) {
+  try {
+    // 验证表单数据
+    const validatedData = profileUpdateSchema.parse(data);
+
+    // 检查邮箱是否已被其他用户使用
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email: validatedData.email,
+        NOT: { id: userId },
+      },
+    });
+
+    if (existingUser) {
+      return {
+        success: false,
+        error: "Email already exists",
+      };
+    }
+
+    // 更新用户信息
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: validatedData.name,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Profile updated successfully!",
+      user,
+    };
+  } catch (error) {
+    console.error("Profile update error:", error);
+
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+    };
+  }
+}
+
+export async function updateUserAvatar(imageUrl: string, userId: string) {
+  try {
+    // 更新用户头像
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        image: imageUrl,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Avatar updated successfully!",
+      user,
+    };
+  } catch (error) {
+    console.error("Avatar update error:", error);
 
     if (error instanceof Error) {
       return {

@@ -207,7 +207,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     // credentials登录，oauth登录，刷新浏览器都会执行这里，但是执行逻辑不一样
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // 处理 session.update() 调用
+      if (trigger === "update" && session) {
+        // 当调用 update() 时，合并传入的 session 数据到 token
+        if (session.user) {
+          token.name = session.user.name ?? token.name;
+          token.email = session.user.email ?? token.email;
+          token.image = session.user.image ?? token.image;
+        }
+        return token;
+      }
+
       // 首次登录时，user 对象存在，需要初始化基本信息
       if (user) {
         token.id = user.id;

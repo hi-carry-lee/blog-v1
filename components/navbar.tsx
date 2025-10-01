@@ -64,7 +64,7 @@ export function Navbar() {
 
         {/* 条件渲染：登录状态显示头像，未登录显示登录按钮 */}
         {session?.user ? (
-          <UserAvatar user={session.user} />
+          <UserAvatar key={session.user.image} user={session.user} />
         ) : (
           <Link href="/login">
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">

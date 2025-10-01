@@ -23,6 +23,12 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+export const profileUpdateSchema = z.object({
+  name: z.string().min(2, "At least 2 characters"),
+  email: z.email("Please enter a valid email address"),
+});
+
 // Type definition
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
