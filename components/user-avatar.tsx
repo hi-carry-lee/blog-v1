@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { User, LogOut } from "lucide-react";
@@ -14,6 +14,8 @@ interface User {
 export default function UserAvatar({ user }: { user: User }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+  console.log("session?.user?.role", session?.user?.role);
 
   const handleSignOut = () => {
     signOut();
@@ -79,6 +81,16 @@ export default function UserAvatar({ user }: { user: User }) {
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
           <div className="py-1">
+            {session?.user?.role === "admin" && (
+              <Link
+                href="/dashboard"
+                className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                onClick={() => setShowDropdown(false)}
+              >
+                <User className="w-4 h-4 mr-2" />
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/profile"
               className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
