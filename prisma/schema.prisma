@@ -25,6 +25,7 @@ model User {
   createdAt     DateTime  @default(now()) @db.Timestamp(6)
   updatedAt     DateTime  @updatedAt
   account       Account[]
+  Post          Post[]
 
   @@map("users")
 }
@@ -54,4 +55,49 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique(map: "category_slug_idx")
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
+  posts     Post[] // ← 这不是数据库字段！是 Prisma 的虚拟关联，方便我们查询Post，进而计算postCount
+
+  @@map("categories")
+}
+
+model Post {
+  id         String  @id @default(cuid())
+  title      String // 标题
+  slug       String  @unique(map: "post_slug_idx") // URL友好的标识符
+  brief      String  @db.Text // 摘要/简介
+  coverImage String? // 封面图URL（可选）
+  content    String  @db.Text // Markdown内容（包含图片URL）
+
+  // SEO 和元数据
+  metaTitle       String? // SEO标题（可选，默认使用title）
+  metaDescription String? // SEO描述（可选，默认使用brief）
+
+  // 发布控制
+  published Boolean @default(false) // 是否发布
+  featured  Boolean @default(false) // 是否为精选文章
+
+  // 关联
+  categoryId String @map("category_id")
+  authorId   String @map("author_id")
+
+  // 时间戳
+  publishedAt DateTime? // 发布时间（可选）
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt
+
+  // 关联关系
+  // 如果分类下有博客，禁止删除分类，必须先删除或转移所有博客，才能删除分类
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("posts")
 }

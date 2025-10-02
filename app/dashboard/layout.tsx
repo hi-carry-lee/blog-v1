@@ -100,11 +100,25 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="lg:pl-64">
-        {/* Navbar */}
+      {/* 
+        关键布局解决方案：使用 Flexbox 解决垂直滚动条问题
+        
+        核心思路：
+        1. 父容器使用 flex flex-col min-h-screen - 创建垂直弹性布局，最小高度为屏幕高度
+        2. Navbar 和 Mobile Header 占用固定空间
+        3. main 使用 flex-1 - 自动占用剩余的所有可用空间
+        
+        为什么这样能解决滚动条问题：
+        - 不再使用硬编码的 calc(100vh-4rem)，避免了不准确的高度计算
+        - flex-1 让 main 元素自动适应剩余空间，无论 navbar 实际高度是多少
+        - 在不同缩放比例下都能正确计算，因为浏览器自动处理 flexbox 布局
+        - 内容不足时不会产生多余滚动，内容超出时才会滚动
+      */}
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        {/* Navbar - 固定高度区域 */}
         <Navbar />
 
-        {/* Mobile Header with Hamburger Menu */}
+        {/* Mobile Header with Hamburger Menu - 仅移动端显示的固定高度区域 */}
         <div className="sticky top-0 z-30 lg:hidden bg-card border-b border-border px-4 py-3">
           <Button
             variant="ghost"
@@ -115,8 +129,12 @@ export default function DashboardLayout({
           </Button>
         </div>
 
-        {/* Page Content */}
-        <main className="min-h-screen">{children}</main>
+        {/* 
+          Page Content - 关键的弹性区域
+          flex-1: 占用父容器中除了 navbar 和 mobile header 之外的所有剩余空间
+          这确保了页面内容区域始终填满可用空间，不会产生不必要的滚动条
+        */}
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );

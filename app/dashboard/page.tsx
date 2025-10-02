@@ -56,9 +56,20 @@ export default function DashboardPage() {
   const handlePageChange = () => {};
 
   return (
-    <div className="bg-background">
-      {/* Main Dashboard Content */}
-      <div className="px-4 md:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto">
+    // 页面容器配合 layout 的 flex-1 工作
+    // min-h-full: 确保内容至少填满父容器的高度
+    // bg-background: 设置背景色
+    <div className="bg-background min-h-full">
+      {/* 
+        Main Dashboard Content - 内容区域优化
+        
+        优化后的响应式边距设置：
+        - px-3 md:px-4 lg:px-6: 小屏幕12px，中屏幕16px，大屏幕24px (减少了空白)
+        - py-3 md:py-4 lg:py-5: 小屏幕12px，中屏幕16px，大屏幕20px (更紧凑的垂直间距)
+        - max-w-6xl: 最大宽度1152px (从1280px减少到1152px，减少左右空白)
+        - mx-auto: 水平居中
+      */}
+      <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -84,9 +95,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
           {/* Total Articles */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+          <div className="bg-card rounded-lg border border-border p-4 md:p-6 shadow-sm">
             <div className="text-sm text-muted-foreground mb-2">
               Total Articles
             </div>
@@ -94,7 +105,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Category Count */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+          <div className="bg-card rounded-lg border border-border p-4 md:p-6 shadow-sm">
             <div className="text-sm text-muted-foreground mb-2">
               Category Count
             </div>
@@ -102,13 +113,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Tag Count */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+          <div className="bg-card rounded-lg border border-border p-4 md:p-6 shadow-sm">
             <div className="text-sm text-muted-foreground mb-2">Tag Count</div>
             <div className="text-3xl font-bold text-foreground">30</div>
           </div>
 
           {/* Visitor Statistics */}
-          <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+          <div className="bg-card rounded-lg border border-border p-4 md:p-6 shadow-sm">
             <div className="text-sm text-muted-foreground mb-2">
               Visitor Statistics
             </div>
@@ -118,7 +129,7 @@ export default function DashboardPage() {
 
         {/* Recent Articles Section */}
         <div className="bg-card rounded-lg border border-border shadow-sm">
-          <div className="px-6 py-4 border-b border-border">
+          <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">
               Recent Articles
             </h2>
@@ -129,19 +140,19 @@ export default function DashboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left px-6 py-3 text-sm font-medium text-muted-foreground">
+                  <th className="text-left px-4 md:px-6 py-2 md:py-3 text-sm font-medium text-muted-foreground">
                     Title
                   </th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-muted-foreground">
+                  <th className="text-left px-4 md:px-6 py-2 md:py-3 text-sm font-medium text-muted-foreground">
                     Status
                   </th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-muted-foreground">
+                  <th className="text-left px-4 md:px-6 py-2 md:py-3 text-sm font-medium text-muted-foreground">
                     Category
                   </th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-muted-foreground">
+                  <th className="text-left px-4 md:px-6 py-2 md:py-3 text-sm font-medium text-muted-foreground">
                     Time
                   </th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-muted-foreground">
+                  <th className="text-left px-4 md:px-6 py-2 md:py-3 text-sm font-medium text-muted-foreground">
                     Operations
                   </th>
                 </tr>
@@ -152,10 +163,10 @@ export default function DashboardPage() {
                     key={article.id}
                     className="border-b border-border hover:bg-accent/50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-foreground">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-sm text-foreground">
                       {article.title}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 md:px-6 py-3 md:py-4">
                       <span
                         className={cn(
                           "inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium",
@@ -167,13 +178,13 @@ export default function DashboardPage() {
                         {article.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-sm text-muted-foreground">
                       {article.category}
                     </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-sm text-muted-foreground">
                       {article.time}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 md:px-6 py-3 md:py-4">
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
@@ -200,7 +211,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="px-4 md:px-6 py-3 md:py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground">
               Showing 1 to 5 of 120 results
             </div>
