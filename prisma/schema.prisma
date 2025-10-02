@@ -68,6 +68,17 @@ model Category {
   @@map("categories")
 }
 
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
+  posts     Post[]   @relation("PostTags") // 多对多
+
+  @@map("tags")
+}
+
 model Post {
   id         String  @id @default(cuid())
   title      String // 标题
@@ -85,9 +96,9 @@ model Post {
   featured  Boolean @default(false) // 是否为精选文章
 
   // 关联
-  categoryId String @map("category_id")
-  authorId   String @map("author_id")
-
+  categoryId  String    @map("category_id")
+  authorId    String    @map("author_id")
+  tagIds      String[]  @map("tag_ids")
   // 时间戳
   publishedAt DateTime? // 发布时间（可选）
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
@@ -96,8 +107,8 @@ model Post {
   // 关联关系
   // 如果分类下有博客，禁止删除分类，必须先删除或转移所有博客，才能删除分类
   category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-
-  author User @relation(fields: [authorId], references: [id])
+  tags     Tag[]    @relation("PostTags")
+  author   User     @relation(fields: [authorId], references: [id])
 
   @@map("posts")
 }
