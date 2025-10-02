@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { CategoryWithPosts, deleteCategory } from "@/lib/actions/category";
-import { toast } from "sonner";
 import Pagination from "@/components/pagination";
+import CategoryForm from "./category-form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 
 type Props = {
   initialCategories: CategoryWithPosts[];
@@ -21,46 +23,80 @@ export default function CategoryTable({
   currentPage,
   totalCount,
 }: Props) {
+  const { success, error } = useSemanticToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<{
+    id: string;
+    name: string;
+    slug: string;
+  } | null>(null);
+
+  // 删除确认对话框状态
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Handle new category
   const handleNewCategory = () => {
-    // TODO: Open dialog/modal for creating new category
-    toast.info("Create category dialog - To be implemented");
+    setEditingCategory(null);
+    setIsFormOpen(true);
   };
 
   // Handle edit category
   const handleEdit = (categoryId: string) => {
-    // TODO: Open dialog/modal for editing category
-    toast.info(`Edit category ${categoryId} - To be implemented`);
+    const category = initialCategories.find((c) => c.id === categoryId);
+    if (category) {
+      setEditingCategory({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+      });
+      setIsFormOpen(true);
+    }
   };
 
-  // Handle delete category
-  const handleDelete = async (categoryId: string, categoryName: string) => {
-    if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) {
-      return;
-    }
+  // Handle form success
+  const handleFormSuccess = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
 
-    setDeletingId(categoryId);
+  // 打开删除确认对话框
+  const handleDeleteClick = (categoryId: string, categoryName: string) => {
+    setCategoryToDelete({ id: categoryId, name: categoryName });
+    setDeleteConfirmOpen(true);
+  };
+
+  // 确认删除
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+
+    setDeletingId(categoryToDelete.id);
+    setDeleteConfirmOpen(false); // 立即关闭对话框
 
     try {
-      const result = await deleteCategory(categoryId);
+      const result = await deleteCategory(categoryToDelete.id);
 
       if (result.success) {
-        toast.success(result.message);
+        success(result.message || "Category deleted successfully!");
         // Refresh the server component data
         startTransition(() => {
           router.refresh();
         });
       } else {
-        toast.error(result.error || "Failed to delete category");
+        error(result.error || "Failed to delete category");
       }
     } catch {
-      toast.error("An unexpected error occurred");
+      error("An unexpected error occurred");
     } finally {
       setDeletingId(null);
+      setCategoryToDelete(null);
     }
   };
 
@@ -73,6 +109,35 @@ export default function CategoryTable({
 
   return (
     <>
+      {/* Category Form Dialog */}
+      <CategoryForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        category={editingCategory}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={handleConfirmDelete}
+        title="Are you sure?"
+        description={
+          <>
+            This will permanently delete the category{" "}
+            <span className="font-semibold text-foreground">
+              &quot;{categoryToDelete?.name}&quot;
+            </span>
+            . This action cannot be undone.
+          </>
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        loading={deletingId === categoryToDelete?.id}
+      />
+
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -149,7 +214,7 @@ export default function CategoryTable({
                           variant="ghost"
                           size="icon"
                           onClick={() =>
-                            handleDelete(category.id, category.name)
+                            handleDeleteClick(category.id, category.name)
                           }
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           disabled={deletingId === category.id}
