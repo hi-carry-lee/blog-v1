@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import Pagination from "@/components/pagination";
 import { cn } from "@/lib/utils";
 
 // Mock data for articles
@@ -45,15 +46,22 @@ const mockArticles = [
 ];
 
 export default function DashboardPage() {
-  const [currentPage] = useState(1);
-  const totalPages = 24; // 120 results / 5 per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalCount = 120; // 总数据量
+  const pageSize = 5; // 每页显示数量
+  const totalPages = Math.ceil(totalCount / pageSize); // 总页数
 
   // Empty handler functions as requested
   const handleNewArticle = () => {};
   const handleNewCategory = () => {};
   const handleEdit = () => {};
   const handleDelete = () => {};
-  const handlePageChange = () => {};
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 在实际应用中，这里会重新获取数据
+  };
 
   return (
     // 页面容器配合 layout 的 flex-1 工作
@@ -211,62 +219,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-4 md:px-6 py-3 md:py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              Showing 1 to 5 of 120 results
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePageChange}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={handlePageChange}
-                    className={cn(
-                      "w-8 h-8 p-0",
-                      currentPage === page &&
-                        "bg-primary text-primary-foreground"
-                    )}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                {totalPages > 5 && (
-                  <>
-                    <span className="px-2 text-muted-foreground">...</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePageChange}
-                      className="w-8 h-8 p-0"
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePageChange}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalCount={totalCount}
+            pageSize={pageSize}
+          />
         </div>
       </div>
     </div>

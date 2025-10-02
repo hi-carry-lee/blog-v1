@@ -5,6 +5,7 @@ type Props = {
   searchParams: Promise<{ page?: string }>;
 };
 
+// 这里参数的来历：在CategoryTable中，点击分页按钮时，会调用handlePageChange，进而调用router.push，从而传递参数过来
 export default async function CategoriesPage({ searchParams }: Props) {
   // Get page from URL search params
   const params = await searchParams;
