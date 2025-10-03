@@ -26,6 +26,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   account       Account[]
   Post          Post[]
+  Comment       Comment[]
 
   @@map("users")
 }
@@ -106,9 +107,26 @@ model Post {
 
   // 关联关系
   // 如果分类下有博客，禁止删除分类，必须先删除或转移所有博客，才能删除分类
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  tags     Tag[]    @relation("PostTags")
-  author   User     @relation(fields: [authorId], references: [id])
+  category Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  tags     Tag[]     @relation("PostTags")
+  author   User      @relation(fields: [authorId], references: [id])
+  Comment  Comment[]
 
   @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String // 评论正文
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String // 作者（用户）
+  postId    String // 所属文章
+  parentId  String? // 可选：父评论 ID（自引用，实现嵌套）
+  approved  Boolean? @default(false) // 审核状态，暂时使用机器审核
+
+  author  User      @relation(fields: [authorId], references: [id])
+  post    Post      @relation(fields: [postId], references: [id])
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id]) // 自引用：父评论
+  replies Comment[] @relation("CommentReplies") // 子评论数组
 }

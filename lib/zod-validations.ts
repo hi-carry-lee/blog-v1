@@ -38,9 +38,28 @@ export const tagSchema = z.object({
   slug: z.string().min(2, "At least 2 characters"),
 });
 
+export const postSchema = z.object({
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  slug: z.string().min(2, "Slug must be at least 2 characters"),
+  brief: z.string().min(10, "Brief must be at least 10 characters"),
+  content: z.string().min(20, "Content must be at least 20 characters"),
+  coverImage: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  categoryId: z.string().min(1, "Category is required"),
+  tagIds: z.array(z.string()).default([]),
+  published: z.boolean().default(false),
+  featured: z.boolean().default(false),
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+});
+
 // Type definition
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
 export type CategoryFormData = z.infer<typeof categorySchema>;
 export type TagFormData = z.infer<typeof tagSchema>;
+export type PostFormData = z.infer<typeof postSchema>;

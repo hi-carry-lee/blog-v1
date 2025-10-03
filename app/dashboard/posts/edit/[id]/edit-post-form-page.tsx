@@ -1,0 +1,501 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import { postSchema } from "@/lib/zod-validations";
+import { z } from "zod";
+import {
+  updatePost,
+  validatePostSlug,
+  getAllCategories,
+  getAllTags,
+} from "@/lib/actions/post";
+import { useEffect, useState } from "react";
+import { generateSlug } from "@/lib/slug-helper";
+import { Loader2, X, ArrowLeft } from "lucide-react";
+import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
+import { logger } from "@/lib/logger";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { PostWithRelations } from "@/lib/actions/post";
+
+// 创建一个匹配 Zod schema 输入类型的类型
+type PostFormInput = z.input<typeof postSchema>;
+
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type Tag = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type EditPostFormPageProps = {
+  post: PostWithRelations;
+};
+
+export default function EditPostFormPage({ post }: EditPostFormPageProps) {
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const { success, error } = useSemanticToast();
+  const router = useRouter();
+
+  const form = useForm<PostFormInput>({
+    resolver: zodResolver(postSchema),
+    defaultValues: {
+      title: post.title,
+      slug: post.slug,
+      brief: post.brief,
+      content: "", // 需要从API获取完整内容，这里简化处理
+      coverImage: post.coverImage || "",
+      categoryId: post.category.id,
+      tagIds: post.tags.map((tag) => tag.id),
+      published: post.published,
+      featured: post.featured,
+      metaTitle: "",
+      metaDescription: "",
+    },
+  });
+
+  // 加载分类和标签
+  useEffect(() => {
+    const loadData = async () => {
+      const [categoriesRes, tagsRes] = await Promise.all([
+        getAllCategories(),
+        getAllTags(),
+      ]);
+
+      if (categoriesRes.success) {
+        setCategories(categoriesRes.categories);
+      }
+
+      if (tagsRes.success) {
+        setTags(tagsRes.tags);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // 同步选中的标签
+  useEffect(() => {
+    setSelectedTags(post.tags.map((tag) => tag.id));
+  }, [post.tags]);
+
+  // 自动生成 slug
+  const handleTitleChange = (title: string) => {
+    if (!form.getValues("slug") || form.getValues("slug") === post.slug) {
+      const generatedSlug = generateSlug(title);
+      form.setValue("slug", generatedSlug);
+    }
+  };
+
+  // Slug 唯一性验证
+  const handleSlugBlur = async () => {
+    const slug = form.getValues("slug");
+
+    if (!slug || slug === post.slug) {
+      return;
+    }
+
+    setIsCheckingSlug(true);
+    try {
+      const result = await validatePostSlug(slug, post.id);
+      if (!result.success) {
+        form.setError("slug", {
+          type: "manual",
+          message: result.error || "Slug validation failed",
+        });
+      } else {
+        form.clearErrors("slug");
+      }
+    } catch (err) {
+      logger.error("Slug validation error", err);
+    } finally {
+      setIsCheckingSlug(false);
+    }
+  };
+
+  // 处理标签选择
+  const handleTagToggle = (tagId: string) => {
+    setSelectedTags((prev) => {
+      const newTags = prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId];
+      form.setValue("tagIds", newTags);
+      return newTags;
+    });
+  };
+
+  const onSubmit = async (data: PostFormInput) => {
+    try {
+      // 确保默认值被正确设置
+      const formData = {
+        ...data,
+        tagIds: data.tagIds ?? [],
+        published: data.published ?? false,
+        featured: data.featured ?? false,
+      };
+
+      const result = await updatePost(formData, post.id);
+
+      if (result.success) {
+        success(result.message || "Post updated successfully!");
+        router.push("/dashboard/posts");
+      } else {
+        error(result.error || "Failed to update post");
+      }
+    } catch (err) {
+      logger.error("Post form submission error", err);
+      error("An unexpected error occurred");
+    }
+  };
+
+  const handleCancel = () => {
+    router.push("/dashboard/posts");
+  };
+
+  return (
+    <div className="bg-background min-h-full">
+      <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCancel}
+            className="h-8 w-8"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Edit Post
+          </h1>
+        </div>
+
+        {/* Form */}
+        <div className="bg-card rounded-lg border border-border shadow-sm p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Title Field */}
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter post title"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleTitleChange(e.target.value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Slug Field */}
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          placeholder="post-slug"
+                          disabled={form.formState.isSubmitting}
+                          {...field}
+                          onBlur={() => {
+                            field.onBlur();
+                            handleSlugBlur();
+                          }}
+                        />
+                        {isCheckingSlug && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      URL-friendly identifier (auto-generated from title).
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Brief Field */}
+              <FormField
+                control={form.control}
+                name="brief"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brief / Excerpt</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Short description of the post"
+                        disabled={form.formState.isSubmitting}
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Content Field */}
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content (Markdown)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Write your post content in Markdown..."
+                        disabled={form.formState.isSubmitting}
+                        rows={12}
+                        className="font-mono text-sm"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Supports Markdown formatting, code blocks, and images.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Cover Image Field */}
+              <FormField
+                control={form.control}
+                name="coverImage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cover Image URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://example.com/image.jpg"
+                        disabled={form.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Category Field */}
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Tags Field */}
+              <FormField
+                control={form.control}
+                name="tagIds"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                      {tags.map((tag) => {
+                        const isSelected = selectedTags.includes(tag.id);
+                        return (
+                          <Badge
+                            key={tag.id}
+                            variant={isSelected ? "default" : "outline"}
+                            className="cursor-pointer transition-colors"
+                            onClick={() => handleTagToggle(tag.id)}
+                          >
+                            {tag.name}
+                            {isSelected && <X className="ml-1 h-3 w-3" />}
+                          </Badge>
+                        );
+                      })}
+                      {tags.length === 0 && (
+                        <span className="text-sm text-muted-foreground">
+                          No tags available
+                        </span>
+                      )}
+                    </div>
+                    <FormDescription className="text-xs">
+                      Click tags to select/deselect
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Published and Featured Checkboxes */}
+              <div className="flex gap-6">
+                <FormField
+                  control={form.control}
+                  name="published"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          disabled={form.formState.isSubmitting}
+                          className="rounded"
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0 cursor-pointer">
+                        Published
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="featured"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          disabled={form.formState.isSubmitting}
+                          className="rounded"
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0 cursor-pointer">
+                        Featured
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* SEO Fields (Collapsible) */}
+              <details className="border rounded-md p-4">
+                <summary className="cursor-pointer font-medium text-sm mb-4">
+                  SEO Settings (Optional)
+                </summary>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="metaTitle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Meta Title</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="SEO title (defaults to post title)"
+                            disabled={form.formState.isSubmitting}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="metaDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Meta Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="SEO description (defaults to brief)"
+                            disabled={form.formState.isSubmitting}
+                            rows={2}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </details>
+
+              {/* Form Actions */}
+              <div className="flex gap-4 pt-6 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={form.formState.isSubmitting}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Post"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -14,8 +16,7 @@ interface User {
 export default function UserAvatar({ user }: { user: User }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
-  console.log("session?.user?.role", session?.user?.role);
+  const { data: session, status } = useSession();
 
   const handleSignOut = () => {
     signOut();
@@ -81,7 +82,9 @@ export default function UserAvatar({ user }: { user: User }) {
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
           <div className="py-1">
-            {session?.user?.role === "admin" && (
+            {/* 只有在会话加载完成，且用户是管理员时才显示Dashboard链接 */}
+            {/* 这样确保了服务器端和客户端的初始渲染完全一致，避免了水合错误 */}
+            {status === "authenticated" && session?.user?.role === "admin" && (
               <Link
                 href="/dashboard"
                 className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
