@@ -20,8 +20,7 @@ marked.setOptions({
 const renderer = new marked.Renderer();
 
 // 标题
-renderer.heading = (token) => {
-  const text = token.text;
+renderer.heading = function (token) {
   const depth = token.depth;
   const classes = {
     1: "text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100",
@@ -30,48 +29,55 @@ renderer.heading = (token) => {
     4: "text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
     5: "text-base font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
     6: "text-sm font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
-  };
+  } as const;
+
+  const html = this.parser.parseInline(token.tokens);
   return `<h${depth} class="${
     classes[depth as keyof typeof classes]
-  }">${text}</h${depth}>`;
+  }">${html}</h${depth}>`;
 };
 
 // 段落
-renderer.paragraph = (token) => {
-  return `<p class="mb-4 leading-7 text-gray-700 dark:text-gray-300">${token.text}</p>`;
+renderer.paragraph = function (token) {
+  const html = this.parser.parseInline(token.tokens);
+  return `<p class="mb-4 leading-7 text-gray-700 dark:text-gray-300">${html}</p>`;
 };
 
 // 链接
-renderer.link = (token) => {
+renderer.link = function (token) {
   const href = token.href;
-  const text = token.text;
+  const text = this.parser.parseInline(token.tokens);
   const title = token.title;
   const titleAttr = title ? ` title="${title}"` : "";
   return `<a href="${href}"${titleAttr} class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer">${text}</a>`;
 };
 
 // 列表
-renderer.list = (token) => {
+renderer.list = function (token) {
   const ordered = token.ordered;
-  const items = token.items.map((item) => renderer.listitem(item)).join("");
   const tag = ordered ? "ol" : "ul";
   const className = ordered
     ? "list-decimal ml-6 my-4 space-y-2"
     : "list-disc ml-6 my-4 space-y-2";
+
+  const items = token.items
+    .map((item) => {
+      const inner = this.parser.parse(item.tokens);
+      return `<li class="leading-7 text-gray-700 dark:text-gray-300">${inner}</li>`;
+    })
+    .join("");
+
   return `<${tag} class="${className}">${items}</${tag}>`;
 };
 
-renderer.listitem = (token) => {
-  return `<li class="leading-7 text-gray-700 dark:text-gray-300">${token.text}</li>`;
-};
-
 // 引用
-renderer.blockquote = (token) => {
-  return `<blockquote class="border-l-4 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 pl-4 py-2 italic my-4 text-gray-700 dark:text-gray-300 rounded">${token.text}</blockquote>`;
+renderer.blockquote = function (token) {
+  const inner = this.parser.parse(token.tokens);
+  return `<blockquote class="border-l-4 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 pl-4 py-2 italic my-4 text-gray-700 dark:text-gray-300 rounded">${inner}</blockquote>`;
 };
 
 // 代码块 - 添加复制按钮
-renderer.code = (token) => {
+renderer.code = function (token) {
   const code = token.text;
   const lang = token.lang || "";
   let highlighted = code;
@@ -112,12 +118,13 @@ renderer.code = (token) => {
 };
 
 // 行内代码
-renderer.codespan = (token) => {
+// 颜色由TailWind CSS控制
+renderer.codespan = function (token) {
   return `<code class="bg-gray-100 dark:bg-gray-800 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded text-sm font-mono">${token.text}</code>`;
 };
 
 // 图片
-renderer.image = (token) => {
+renderer.image = function (token) {
   const href = token.href;
   const text = token.text;
   const title = token.title;
@@ -126,16 +133,31 @@ renderer.image = (token) => {
 };
 
 // 水平线
-renderer.hr = () => {
+renderer.hr = function () {
   return `<hr class="my-8 border-t-2 border-gray-200 dark:border-gray-700">`;
 };
 
 // 表格
-renderer.table = (token) => {
-  const header = token.header.map((cell) => renderer.tablecell(cell)).join("");
+renderer.table = function (token) {
+  const header = token.header
+    .map(
+      (cell) =>
+        `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">${this.parser.parseInline(
+          cell.tokens
+        )}</th>`
+    )
+    .join("");
+
   const rows = token.rows
     .map((row) => {
-      const cells = row.map((cell) => renderer.tablecell(cell)).join("");
+      const cells = row
+        .map(
+          (cell) =>
+            `<td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${this.parser.parseInline(
+              cell.tokens
+            )}</td>`
+        )
+        .join("");
       return `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">${cells}</tr>`;
     })
     .join("");
@@ -150,22 +172,16 @@ renderer.table = (token) => {
   </div>`;
 };
 
-renderer.tablecell = (token) => {
-  const tag = token.header ? "th" : "td";
-  const className = token.header
-    ? "px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-    : "px-4 py-3 text-sm text-gray-700 dark:text-gray-300";
-  return `<${tag} class="${className}">${token.text}</${tag}>`;
-};
-
 // 强调（加粗）
-renderer.strong = (token) => {
-  return `<strong class="font-bold text-gray-900 dark:text-gray-100">${token.text}</strong>`;
+renderer.strong = function (token) {
+  const html = this.parser.parseInline(token.tokens);
+  return `<strong class="font-bold text-gray-900 dark:text-gray-100">${html}</strong>`;
 };
 
 // 斜体
-renderer.em = (token) => {
-  return `<em class="italic text-gray-800 dark:text-gray-200">${token.text}</em>`;
+renderer.em = function (token) {
+  const html = this.parser.parseInline(token.tokens);
+  return `<em class="italic text-gray-800 dark:text-gray-200">${html}</em>`;
 };
 
 // 使用 marked 处理 markdown

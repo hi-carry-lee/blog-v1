@@ -15,8 +15,14 @@ interface User {
 // 用户头像组件
 export default function UserAvatar({ user }: { user: User }) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
+
+  // 确保组件已挂载
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSignOut = () => {
     signOut();
@@ -53,6 +59,11 @@ export default function UserAvatar({ user }: { user: User }) {
       .slice(0, 2);
   };
 
+  // 判断是否显示管理员菜单
+  // 只在客户端且会话已加载完成后进行判断
+  const showAdminMenu =
+    isMounted && status === "authenticated" && session?.user?.role === "admin";
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -82,9 +93,8 @@ export default function UserAvatar({ user }: { user: User }) {
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
           <div className="py-1">
-            {/* 只有在会话加载完成，且用户是管理员时才显示Dashboard链接 */}
-            {/* 这样确保了服务器端和客户端的初始渲染完全一致，避免了水合错误 */}
-            {status === "authenticated" && session?.user?.role === "admin" && (
+            {/* 使用 isMounted 确保只在客户端渲染管理员链接 */}
+            {showAdminMenu && (
               <Link
                 href="/dashboard"
                 className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"

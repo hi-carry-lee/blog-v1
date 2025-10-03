@@ -51,7 +51,7 @@ export default function PostFormPage() {
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
   const { success, error } = useSemanticToast();
@@ -137,14 +137,17 @@ export default function PostFormPage() {
 
   // 处理标签选择
   const handleTagToggle = (tagId: string) => {
-    setSelectedTags((prev) => {
-      const newTags = prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId];
-      form.setValue("tagIds", newTags);
-      return newTags;
-    });
+    const currentTagIds = form.getValues("tagIds") || [];
+    const newTagIds = currentTagIds.includes(tagId)
+      ? currentTagIds.filter((id) => id !== tagId)
+      : [...currentTagIds, tagId];
+    form.setValue("tagIds", newTagIds);
   };
+
+  // 同步 selectedTags 到 form
+  useEffect(() => {
+    form.setValue("tagIds", selectedTags);
+  }, [selectedTags, form]);
 
   const onSubmit = async (data: PostFormInput) => {
     try {
@@ -507,36 +510,39 @@ export default function PostFormPage() {
               <FormField
                 control={form.control}
                 name="tagIds"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Tags</FormLabel>
-                    <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
-                      {tags.map((tag) => {
-                        const isSelected = selectedTags.includes(tag.id);
-                        return (
-                          <Badge
-                            key={tag.id}
-                            variant={isSelected ? "default" : "outline"}
-                            className="cursor-pointer transition-colors"
-                            onClick={() => handleTagToggle(tag.id)}
-                          >
-                            {tag.name}
-                            {isSelected && <X className="ml-1 h-3 w-3" />}
-                          </Badge>
-                        );
-                      })}
-                      {tags.length === 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          No tags available
-                        </span>
-                      )}
-                    </div>
-                    <FormDescription className="text-xs">
-                      Click tags to select/deselect
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={() => {
+                  const currentTagIds = form.watch("tagIds") || [];
+                  return (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                        {tags.map((tag) => {
+                          const isSelected = currentTagIds.includes(tag.id);
+                          return (
+                            <Badge
+                              key={tag.id}
+                              variant={isSelected ? "default" : "outline"}
+                              className="cursor-pointer transition-colors"
+                              onClick={() => handleTagToggle(tag.id)}
+                            >
+                              {tag.name}
+                              {isSelected && <X className="ml-1 h-3 w-3" />}
+                            </Badge>
+                          );
+                        })}
+                        {tags.length === 0 && (
+                          <span className="text-sm text-muted-foreground">
+                            No tags available
+                          </span>
+                        )}
+                      </div>
+                      <FormDescription className="text-xs">
+                        Click tags to select/deselect
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               {/* Published and Featured Checkboxes */}
@@ -583,51 +589,6 @@ export default function PostFormPage() {
                   )}
                 />
               </div>
-
-              {/* SEO Fields (Collapsible) */}
-              <details className="border rounded-md p-4">
-                <summary className="cursor-pointer font-medium text-sm mb-4">
-                  SEO Settings (Optional)
-                </summary>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="metaTitle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Meta Title</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="SEO title (defaults to post title)"
-                            disabled={form.formState.isSubmitting}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="metaDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Meta Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="SEO description (defaults to brief)"
-                            disabled={form.formState.isSubmitting}
-                            rows={2}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </details>
 
               {/* Form Actions */}
               <div className="flex gap-4 pt-6 border-t">

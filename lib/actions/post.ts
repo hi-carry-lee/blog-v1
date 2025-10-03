@@ -11,7 +11,10 @@ export type PostWithRelations = {
   title: string;
   slug: string;
   brief: string;
+  content: string;
   coverImage: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
   published: boolean;
   featured: boolean;
   createdAt: Date;
