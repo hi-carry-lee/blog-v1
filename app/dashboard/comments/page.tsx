@@ -2,6 +2,14 @@ import { getAllComments } from "@/lib/actions/comment";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
@@ -47,39 +55,22 @@ export default async function CommentsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Author
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Content
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Post
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Replies
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Status
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Date
-                    </th>
-                    <th className="text-left p-4 font-medium text-muted-foreground">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Author</TableHead>
+                    <TableHead>Content</TableHead>
+                    <TableHead>Post</TableHead>
+                    <TableHead>Replies</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {comments.map((comment) => (
-                    <tr
-                      key={comment.id}
-                      className="border-b border-border hover:bg-muted/50"
-                    >
-                      <td className="p-4">
+                    <TableRow key={comment.id}>
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={comment.author.image || ""} />
@@ -98,48 +89,48 @@ export default async function CommentsPage() {
                             </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <p className="text-foreground max-w-xs truncate">
                           {comment.content}
                         </p>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <Link
                           href={`/posts/${comment.post.slug}`}
                           className="text-primary hover:underline text-sm"
                         >
                           {comment.post.title}
                         </Link>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <MessageSquare className="w-4 h-4" />
                           <span>{comment._count.replies}</span>
                         </div>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <Badge
                           variant={comment.approved ? "default" : "secondary"}
                           className="text-xs"
                         >
                           {comment.approved ? "Approved" : "Pending"}
                         </Badge>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <p className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.createdAt), {
                             addSuffix: true,
                           })}
                         </p>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <CommentActions comment={comment} />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
