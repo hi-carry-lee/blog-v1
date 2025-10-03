@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const folder = (formData.get("folder") as string) || "uploads";
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -29,13 +30,9 @@ export async function POST(request: NextRequest) {
     }>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: "ai-blog/avatars",
+          folder: `ai-blog/${folder}`,
           resource_type: "auto",
-          // TODO
-          transformation: [
-            { width: 400, height: 400, crop: "fill" },
-            { quality: "auto:good" },
-          ],
+          transformation: [{ quality: "auto:good" }],
         },
         (error, result) => {
           if (error) reject(error);

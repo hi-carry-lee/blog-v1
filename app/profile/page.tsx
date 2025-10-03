@@ -112,6 +112,7 @@ export default function ProfilePage() {
       // Create FormData for file upload
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("folder", "avatars");
 
       // Upload to Cloudinary
       const uploadResponse = await uploadImage(formData);

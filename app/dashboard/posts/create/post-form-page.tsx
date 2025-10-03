@@ -22,13 +22,14 @@ import {
   getAllCategories,
   getAllTags,
 } from "@/lib/actions/post";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
-import { Loader2, X, ArrowLeft } from "lucide-react";
+import { Loader2, X, ArrowLeft, Camera } from "lucide-react";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { logger } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // 创建一个匹配 Zod schema 输入类型的类型
 type PostFormInput = z.input<typeof postSchema>;
@@ -50,8 +51,11 @@ export default function PostFormPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
   const { success, error } = useSemanticToast();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<PostFormInput>({
     resolver: zodResolver(postSchema),
@@ -69,6 +73,14 @@ export default function PostFormPage() {
       metaDescription: "",
     },
   });
+
+  // Initialize preview image URL when coverImage value changes
+  useEffect(() => {
+    const coverImageValue = form.watch("coverImage");
+    if (coverImageValue && coverImageValue !== previewImageUrl) {
+      setPreviewImageUrl(coverImageValue);
+    }
+  }, [form, previewImageUrl]);
 
   // 加载分类和标签
   useEffect(() => {
@@ -161,6 +173,108 @@ export default function PostFormPage() {
     router.push("/dashboard/posts");
   };
 
+  // Handle image upload
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      error("Invalid file type", "Please select a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      error("File too large", "Please select an image smaller than 5MB.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "cover-images");
+
+      // Upload to Cloudinary
+      const uploadResponse = await uploadImage(formData);
+
+      if (uploadResponse.success) {
+        // Update form field and preview
+        form.setValue("coverImage", uploadResponse.url);
+        setPreviewImageUrl(uploadResponse.url);
+        success(
+          "Image uploaded successfully!",
+          "Cover image has been uploaded and set."
+        );
+      } else {
+        error(
+          "Upload failed",
+          uploadResponse.error || "Failed to upload image. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("Image upload error:", err);
+      error("Upload failed", "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const uploadImage = async (
+    formData: FormData
+  ): Promise<{
+    success: boolean;
+    url: string;
+    public_id: string;
+    error?: string;
+  }> => {
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        url: data.url,
+        public_id: data.public_id,
+      };
+    } catch (error) {
+      console.error("Upload error:", error);
+      return {
+        success: false,
+        url: "",
+        public_id: "",
+        error: error instanceof Error ? error.message : "Upload failed",
+      };
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = () => {
+    form.setValue("coverImage", "");
+    setPreviewImageUrl("");
+  };
+
   return (
     <div className="bg-background min-h-full">
       <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
@@ -243,15 +357,73 @@ export default function PostFormPage() {
               <FormField
                 control={form.control}
                 name="coverImage"
-                render={({ field }) => (
+                render={({}) => (
                   <FormItem>
-                    <FormLabel>Cover Image URL (Optional)</FormLabel>
+                    <FormLabel>Cover Image</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://example.com/image.jpg"
-                        disabled={form.formState.isSubmitting}
-                        {...field}
-                      />
+                      <div className="space-y-4">
+                        {/* Image Preview */}
+                        {previewImageUrl && (
+                          <div className="relative inline-block">
+                            <div className="relative w-64 h-40 overflow-hidden rounded-md border border-border bg-muted">
+                              <Image
+                                src={previewImageUrl}
+                                alt="Cover preview"
+                                fill
+                                className="object-cover"
+                                priority={false}
+                                sizes="(max-width: 768px) 100vw, 256px"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                              onClick={handleRemoveImage}
+                              disabled={
+                                form.formState.isSubmitting || isUploadingImage
+                              }
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Upload Button */}
+                        <div className="flex flex-col space-y-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleUploadClick}
+                            disabled={
+                              form.formState.isSubmitting || isUploadingImage
+                            }
+                            className="w-fit"
+                          >
+                            {isUploadingImage ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="mr-2 h-4 w-4" />
+                                Upload Cover Image
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        {/* Hidden file input */}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
