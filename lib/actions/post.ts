@@ -451,6 +451,79 @@ export async function deletePost(postId: string) {
 }
 
 /**
+ * 📢 切换文章发布状态
+ */
+export async function togglePublishPost(postId: string) {
+  try {
+    logger.info("Toggling publish status", { postId });
+
+    // 获取当前用户
+    const session = await auth();
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "You must be logged in to toggle publish status",
+      };
+    }
+
+    // 检查文章是否存在
+    const existingPost = await prisma.post.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        title: true,
+        authorId: true,
+        published: true,
+      },
+    });
+
+    if (!existingPost) {
+      return {
+        success: false,
+        error: "Post not found",
+      };
+    }
+
+    // 检查权限（只有作者或管理员可以切换发布状态）
+    if (
+      existingPost.authorId !== session.user.id &&
+      session.user.role !== "admin"
+    ) {
+      return {
+        success: false,
+        error:
+          "You don't have permission to toggle publish status for this post",
+      };
+    }
+
+    // 切换发布状态
+    const newPublishedStatus = !existingPost.published;
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        published: newPublishedStatus,
+        // 如果从未发布变为发布，设置发布时间
+        publishedAt: newPublishedStatus ? new Date() : undefined,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Post ${
+        newPublishedStatus ? "published" : "unpublished"
+      } successfully`,
+      post: updatedPost,
+    };
+  } catch (error) {
+    logger.error("Toggle publish status failed", error);
+    return {
+      success: false,
+      error: "Failed to toggle publish status",
+    };
+  }
+}
+
+/**
  * 🔍 根据 ID 获取单个博客文章
  */
 export async function getPostById(id: string) {
