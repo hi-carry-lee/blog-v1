@@ -12,11 +12,14 @@ import {
   MessageSquare,
   Menu,
   X,
+  Home,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -34,6 +37,45 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-8 h-8 text-red-600" />
+            </div>
+
+            <h1 className="text-2xl font-bold text-foreground mb-3">
+              Access Denied
+            </h1>
+
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              You don&apos;t have permission to access the admin dashboard. This
+              area is restricted to administrators only.
+            </p>
+
+            <div className="space-y-3">
+              <Link href="/" className="block">
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Home className="w-4 h-4 mr-2" />
+                  Return to Homepage
+                </Button>
+              </Link>
+
+              <Link href="/posts" className="block">
+                <Button variant="outline" className="w-full">
+                  Browse Posts
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

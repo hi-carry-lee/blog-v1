@@ -9,6 +9,14 @@ import Pagination from "@/components/pagination";
 import CategoryForm from "./category-form";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Props = {
   initialCategories: CategoryWithPosts[];
@@ -154,85 +162,71 @@ export default function CategoryTable({
 
       {/* Categories Table */}
       <div className="bg-card rounded-lg border border-border shadow-sm">
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-muted-foreground">
-                  Name
-                </th>
-                <th className="text-left px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-muted-foreground">
-                  Slug
-                </th>
-                <th className="text-left px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-muted-foreground">
-                  Posts
-                </th>
-                <th className="text-left px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-muted-foreground">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {initialCategories.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 md:px-6 py-8 text-center text-muted-foreground"
-                  >
-                    No categories found. Create your first category to get
-                    started.
-                  </td>
-                </tr>
-              ) : (
-                initialCategories.map((category) => (
-                  <tr
-                    key={category.id}
-                    className="border-b border-border hover:bg-accent/50 transition-colors"
-                  >
-                    <td className="px-4 md:px-6 py-4 md:py-5 text-sm font-medium text-foreground">
-                      {category.name}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground">
-                      {category.slug}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground">
-                      {category.postCount}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 md:py-5">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(category.id)}
-                          className="h-8 w-8"
-                          disabled={isPending}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleDeleteClick(category.id, category.name)
-                          }
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          disabled={deletingId === category.id}
-                        >
-                          {deletingId === category.id ? (
-                            <span className="w-4 h-4 border-2 border-destructive border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="text-muted-foreground">Name</TableHead>
+              <TableHead className="text-muted-foreground">Slug</TableHead>
+              <TableHead className="text-muted-foreground">Posts</TableHead>
+              <TableHead className="text-muted-foreground">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {initialCategories.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center text-muted-foreground py-8"
+                >
+                  No categories found. Create your first category to get
+                  started.
+                </TableCell>
+              </TableRow>
+            ) : (
+              initialCategories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="font-medium text-foreground">
+                    {category.name}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {category.slug}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {category.postCount}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(category.id)}
+                        className="h-8 w-8"
+                        disabled={isPending}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleDeleteClick(category.id, category.name)
+                        }
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        disabled={deletingId === category.id}
+                      >
+                        {deletingId === category.id ? (
+                          <span className="w-4 h-4 border-2 border-destructive border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {totalPages > 0 && (

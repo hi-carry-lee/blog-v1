@@ -155,7 +155,7 @@ export default async function PostDetailPage({
           </div>
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div>
+            <div className="mb-8">
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link key={tag.id} href={`/posts?tag=${tag.slug}`}>

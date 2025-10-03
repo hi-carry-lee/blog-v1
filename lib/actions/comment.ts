@@ -233,3 +233,149 @@ export async function getPostCommentsCount(postId: string) {
     return { success: false, count: 0 };
   }
 }
+
+/**
+ * 获取所有评论（管理员用）
+ */
+export async function getAllComments() {
+  try {
+    const comments = await prisma.comment.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        post: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            replies: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      success: true,
+      comments,
+    };
+  } catch (error) {
+    console.error("Failed to fetch all comments:", error);
+    return {
+      success: false,
+      error: "Failed to load comments",
+      comments: [],
+    };
+  }
+}
+
+/**
+ * 删除评论（级联删除子评论）
+ */
+export async function deleteComment(commentId: string) {
+  try {
+    // 检查用户权限
+    const session = await auth();
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Please log in first",
+      };
+    }
+
+    // 检查是否为管理员
+    if (session.user.role !== "admin") {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    // 递归删除所有子评论
+    async function deleteCommentAndReplies(commentId: string) {
+      const comment = await prisma.comment.findUnique({
+        where: { id: commentId },
+        include: {
+          replies: true,
+        },
+      });
+
+      if (comment) {
+        // 先删除所有子评论
+        for (const reply of comment.replies) {
+          await deleteCommentAndReplies(reply.id);
+        }
+
+        // 删除当前评论
+        await prisma.comment.delete({
+          where: { id: commentId },
+        });
+      }
+    }
+
+    await deleteCommentAndReplies(commentId);
+
+    return {
+      success: true,
+      message: "Comment deleted successfully",
+    };
+  } catch (error) {
+    console.error("Failed to delete comment:", error);
+    return {
+      success: false,
+      error: "Failed to delete comment",
+    };
+  }
+}
+
+/**
+ * 审核评论
+ */
+export async function approveComment(commentId: string, approved: boolean) {
+  try {
+    // 检查用户权限
+    const session = await auth();
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Please log in first",
+      };
+    }
+
+    // 检查是否为管理员
+    if (session.user.role !== "admin") {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    await prisma.comment.update({
+      where: { id: commentId },
+      data: { approved },
+    });
+
+    return {
+      success: true,
+      message: approved ? "Comment approved" : "Comment rejected",
+    };
+  } catch (error) {
+    console.error("Failed to approve comment:", error);
+    return {
+      success: false,
+      error: "Failed to update comment status",
+    };
+  }
+}
