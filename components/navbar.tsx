@@ -8,6 +8,7 @@ import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
 import { useState } from "react";
+import Image from "next/image";
 
 export function Navbar() {
   const { isDark, toggleTheme } = useAppTheme();
@@ -20,7 +21,13 @@ export function Navbar() {
       <div className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-4">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <Triangle className="w-6 h-6 text-primary fill-primary" />
+          <Image
+            src="/logo.png"
+            alt="AI Blog Platform"
+            width={30}
+            height={30}
+            priority
+          />
           <span className="font-semibold text-lg text-foreground">
             AI Blog Platform
           </span>

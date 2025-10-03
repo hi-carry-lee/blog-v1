@@ -16,17 +16,17 @@ import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     search?: string;
     category?: string;
     tag?: string;
-  };
+  }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const searchTerm = searchParams.search || "";
-  const categorySlug = searchParams.category || "";
-  const tagSlug = searchParams.tag || "";
+  const page = Number((await searchParams).page) || 1;
+  const searchTerm = (await searchParams).search || "";
+  const categorySlug = (await searchParams).category || "";
+  const tagSlug = (await searchParams).tag || "";
   const pageSize = 9; // 3x3 grid
 
   // Fetch posts, categories and tags in parallel

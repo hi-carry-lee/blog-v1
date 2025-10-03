@@ -211,6 +211,7 @@ export default function PostTable({
               <TableHead className="px-4 md:px-6">Title</TableHead>
               <TableHead className="px-4 md:px-6">Status</TableHead>
               <TableHead className="px-4 md:px-6">Featured</TableHead>
+              <TableHead className="px-4 md:px-6">Views</TableHead>
               <TableHead className="px-4 md:px-6">Category</TableHead>
               <TableHead className="px-4 md:px-6">Date</TableHead>
               <TableHead className="px-4 md:px-6">Actions</TableHead>
@@ -220,7 +221,7 @@ export default function PostTable({
             {initialPosts.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 md:px-6 py-8 text-center text-muted-foreground"
                 >
                   No posts found. Create your first post to get started.
@@ -254,6 +255,16 @@ export default function PostTable({
                     ) : (
                       <span className="text-sm text-muted-foreground">-</span>
                     )}
+                  </TableCell>
+                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-medium text-foreground">
+                        {post.views.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        views
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground">
                     {post.category.name}

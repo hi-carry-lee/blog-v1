@@ -64,6 +64,11 @@ export default function UserAvatar({ user }: { user: User }) {
   const showAdminMenu =
     isMounted && status === "authenticated" && session?.user?.role === "admin";
 
+  // 只有管理员才显示整个组件
+  if (!showAdminMenu) {
+    return null;
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -93,17 +98,14 @@ export default function UserAvatar({ user }: { user: User }) {
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
           <div className="py-1">
-            {/* 使用 isMounted 确保只在客户端渲染管理员链接 */}
-            {showAdminMenu && (
-              <Link
-                href="/dashboard"
-                className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                onClick={() => setShowDropdown(false)}
-              >
-                <User className="w-4 h-4 mr-2" />
-                Dashboard
-              </Link>
-            )}
+            <Link
+              href="/dashboard"
+              className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={() => setShowDropdown(false)}
+            >
+              <User className="w-4 h-4 mr-2" />
+              Dashboard
+            </Link>
             <Link
               href="/profile"
               className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
