@@ -104,6 +104,7 @@ model Post {
   publishedAt DateTime? // 发布时间（可选）
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt   DateTime  @updatedAt
+  views       Int       @default(0) // 浏览量
 
   // 关联关系
   // 如果分类下有博客，禁止删除分类，必须先删除或转移所有博客，才能删除分类

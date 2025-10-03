@@ -17,6 +17,7 @@ export type PostWithRelations = {
   metaDescription: string | null;
   published: boolean;
   featured: boolean;
+  views: number;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -618,6 +619,305 @@ export async function getAllTags() {
       success: false,
       error: "Failed to fetch tags",
       tags: [],
+    };
+  }
+}
+
+/**
+ * 📰 查询所有已发布的文章（前台使用）
+ */
+export async function queryPublishedPosts(
+  page: number = 1,
+  pageSize: number = 10,
+  searchTerm?: string,
+  categorySlug?: string,
+  tagSlug?: string
+) {
+  try {
+    logger.info("Querying published posts", {
+      page,
+      pageSize,
+      searchTerm,
+      categorySlug,
+      tagSlug,
+    });
+
+    // 构建搜索条件
+    const whereCondition: {
+      published: boolean;
+      OR?: Array<
+        | { title: { contains: string; mode: "insensitive" } }
+        | { brief: { contains: string; mode: "insensitive" } }
+      >;
+      category?: { slug: string };
+      tags?: { some: { slug: string } };
+    } = {
+      published: true,
+    };
+
+    // 搜索关键词
+    if (searchTerm) {
+      whereCondition.OR = [
+        { title: { contains: searchTerm, mode: "insensitive" as const } },
+        { brief: { contains: searchTerm, mode: "insensitive" as const } },
+      ];
+    }
+
+    // 按分类筛选
+    if (categorySlug) {
+      whereCondition.category = {
+        slug: categorySlug,
+      };
+    }
+
+    // 按标签筛选
+    if (tagSlug) {
+      whereCondition.tags = {
+        some: {
+          slug: tagSlug,
+        },
+      };
+    }
+
+    // 并行查询：文章列表 + 总数
+    const [posts, totalCount] = await Promise.all([
+      prisma.post.findMany({
+        where: whereCondition,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { publishedAt: "desc" },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      }),
+      prisma.post.count({ where: whereCondition }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    logger.info("Published posts query completed", {
+      totalCount,
+      totalPages,
+      currentPage: page,
+      returnedCount: posts.length,
+    });
+
+    return {
+      success: true,
+      posts: posts as PostWithRelations[],
+      totalPages,
+      currentPage: page,
+      totalCount,
+    };
+  } catch (error) {
+    logger.error("Query published posts failed", error);
+    return {
+      success: false,
+      error: "Failed to fetch posts",
+      posts: [],
+      totalPages: 0,
+      currentPage: page,
+      totalCount: 0,
+    };
+  }
+}
+
+/**
+ * 📖 根据 slug 获取已发布的文章详情（前台使用）
+ */
+export async function getPublishedPostBySlug(slug: string) {
+  try {
+    logger.info("Getting published post by slug", { slug });
+
+    const post = await prisma.post.findUnique({
+      where: {
+        slug,
+        published: true,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    return { success: true, post: post as PostWithRelations };
+  } catch (error) {
+    logger.error("Failed to get published post by slug", error);
+    return { success: false, error: "Failed to fetch post" };
+  }
+}
+
+/**
+ * 👁️ 增加文章浏览量
+ */
+export async function incrementPostViews(postId: string) {
+  try {
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+
+    logger.info("Post views incremented", { postId });
+    return { success: true };
+  } catch (error) {
+    logger.error("Failed to increment post views", error);
+    return { success: false, error: "Failed to update views" };
+  }
+}
+
+/**
+ * 📊 获取Dashboard统计数据
+ */
+export async function getDashboardStats() {
+  try {
+    // 计算30天前的日期
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // 并行查询所有统计数据
+    const [totalArticles, recentArticles, totalTags, totalViews] =
+      await Promise.all([
+        // 总文章数
+        prisma.post.count(),
+
+        // 30天内发布的文章数
+        prisma.post.count({
+          where: {
+            published: true,
+            publishedAt: {
+              gte: thirtyDaysAgo,
+            },
+          },
+        }),
+
+        // 总标签数
+        prisma.tag.count(),
+
+        // 总浏览量
+        prisma.post.aggregate({
+          _sum: {
+            views: true,
+          },
+          where: {
+            published: true,
+          },
+        }),
+      ]);
+
+    return {
+      success: true,
+      stats: {
+        totalArticles,
+        recentArticles,
+        totalTags,
+        totalViews: totalViews._sum.views || 0,
+      },
+    };
+  } catch (error) {
+    logger.error("Failed to get dashboard stats", error);
+    return {
+      success: false,
+      error: "Failed to fetch dashboard statistics",
+      stats: {
+        totalArticles: 0,
+        recentArticles: 0,
+        totalTags: 0,
+        totalViews: 0,
+      },
+    };
+  }
+}
+
+/**
+ * 📋 获取最近的文章列表（用于Dashboard）
+ */
+export async function getRecentPosts(limit: number = 5) {
+  try {
+    const posts = await prisma.post.findMany({
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      posts: posts as unknown as PostWithRelations[],
+    };
+  } catch (error) {
+    logger.error("Failed to get recent posts", error);
+    return {
+      success: false,
+      error: "Failed to fetch recent posts",
+      posts: [],
     };
   }
 }

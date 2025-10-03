@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -29,12 +30,14 @@ export default function HomePage() {
             platform. From intelligent search to AI-generated covers, we provide
             the tools you need to create, manage, and grow your blog.
           </p>
-          <Button
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
-          >
-            Get Started
-          </Button>
+          <Link href="/posts">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
+            >
+              Explore Posts
+            </Button>
+          </Link>
         </div>
       </section>
 
