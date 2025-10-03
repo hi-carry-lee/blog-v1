@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import MarkdownEditor from "@/components/markdown-editor";
 import {
   Form,
   FormControl,
@@ -279,16 +280,18 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
                   <FormItem>
                     <FormLabel>Content (Markdown)</FormLabel>
                     <FormControl>
-                      <Textarea
+                      <MarkdownEditor
+                        value={field.value}
+                        onChange={field.onChange}
                         placeholder="Write your post content in Markdown..."
                         disabled={form.formState.isSubmitting}
-                        rows={12}
-                        className="font-mono text-sm"
-                        {...field}
+                        minHeight={400}
+                        showStats={true}
                       />
                     </FormControl>
                     <FormDescription className="text-xs">
-                      Supports Markdown formatting, code blocks, and images.
+                      Supports Markdown formatting, code blocks, and images. Use
+                      the toolbar to format text or upload images.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
