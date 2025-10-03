@@ -1,19 +1,26 @@
 "use client";
 
-import { Search, Sun, Moon, Triangle, Menu, X } from "lucide-react";
+import { Search, Sun, Moon, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export function Navbar() {
   const { isDark, toggleTheme } = useAppTheme();
+  const [isMounted, setIsMounted] = useState(false);
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <nav className="bg-background border-b border-border">
@@ -82,7 +89,7 @@ export function Navbar() {
 
           {/* 条件渲染：登录状态显示头像，未登录显示登录按钮 */}
           {session?.user ? (
-            <UserAvatar key={session.user.image} user={session.user} />
+            <UserAvatar user={session.user} isNavbar={true} />
           ) : (
             <Link href="/login">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -96,7 +103,11 @@ export function Navbar() {
         <div className="flex md:hidden items-center gap-2">
           {/* Mobile Auth */}
           {session?.user ? (
-            <UserAvatar key={session.user.image} user={session.user} />
+            <UserAvatar
+              key={session.user.image}
+              user={session.user}
+              isNavbar={true}
+            />
           ) : (
             <Link href="/login">
               <Button

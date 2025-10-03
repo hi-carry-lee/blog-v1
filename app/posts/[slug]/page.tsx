@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { getPublishedPostBySlug, incrementPostViews } from "@/lib/actions/post";
+import { getPostComments } from "@/lib/actions/comment";
 import { markdownToHtml } from "@/lib/markdown";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MarkdownContent } from "@/components/markdown-content";
+import { CommentSection } from "@/components/comment-section";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Eye, ArrowLeft } from "lucide-react";
@@ -28,6 +30,15 @@ export default async function PostDetailPage({
   incrementPostViews(post.id).catch((error) =>
     console.error("Failed to increment views:", error)
   );
+
+  // 获取评论
+  const commentsResult = await getPostComments(post.id);
+  console.log(
+    "commentsResult.comments.length: ",
+    commentsResult.comments.length
+  );
+  console.log("commentsResult.comments: ", commentsResult.comments);
+  const comments = commentsResult.comments || [];
 
   // 渲染markdown内容
   const htmlContent = await markdownToHtml(post.content);
@@ -95,7 +106,7 @@ export default async function PostDetailPage({
           </p>
 
           {/* Author & Meta Info */}
-          <div className="flex items-center justify-between flex-wrap gap-4 pb-8 mb-8 border-b border-border">
+          <div className="flex items-center justify-between flex-wrap gap-4 pb-8 mb-4 border-b border-border">
             <div className="flex items-center gap-4">
               {/* Author Avatar */}
               <Avatar className="w-12 h-12">
@@ -142,32 +153,31 @@ export default async function PostDetailPage({
               <span className="text-sm">{post.views || 0} views</span>
             </div>
           </div>
-
-          {/* Article Content */}
-          <div className="mb-12">
-            <MarkdownContent html={htmlContent} />
-          </div>
-
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div className="pt-8 border-t border-border">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-                Tags
-              </h3>
+            <div>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link key={tag.id} href={`/posts?tag=${tag.slug}`}>
                     <Badge
                       variant="outline"
-                      className="hover:bg-accent cursor-pointer"
+                      className="bg-slate-300 px-2 py-1 hover:bg-accent cursor-pointer"
                     >
-                      {tag.name}
+                      # {tag.name}
                     </Badge>
                   </Link>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Article Content */}
+          <div className="mb-12">
+            <MarkdownContent html={htmlContent} />
+          </div>
+
+          {/* Comments Section */}
+          <CommentSection postId={post.id} initialComments={comments} />
         </article>
       </main>
 

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -55,9 +56,13 @@ export default function DashboardLayout({
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                B
-              </span>
+              <Image
+                src="/logo.png"
+                alt="AI Blog Platform"
+                width={32}
+                height={32}
+                priority
+              />
             </div>
             <span className="font-semibold text-lg text-foreground">
               Bloggr
