@@ -58,6 +58,57 @@ export default function MarkdownEditor({
     updatePreview();
   }, [value, isPreviewMode]);
 
+  // Handle copy button clicks in preview mode
+  useEffect(() => {
+    if (!isPreviewMode) return;
+
+    const handleCopyClick = async (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest(".copy-code-btn") as HTMLButtonElement;
+      if (!button) return;
+
+      // 阻止默认行为和事件冒泡，防止触发表单提交
+      e.preventDefault();
+      e.stopPropagation();
+
+      const code = button.getAttribute("data-code");
+      if (!code) return;
+
+      try {
+        // Decode HTML entities
+        const decodedCode = code
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&amp;/g, "&");
+
+        await navigator.clipboard.writeText(decodedCode);
+
+        // Update button text to show success
+        const copyText = button.querySelector(".copy-text");
+        if (copyText) {
+          const originalText = copyText.textContent;
+          copyText.textContent = "Copied!";
+          button.classList.add("bg-green-100", "dark:bg-green-900");
+
+          setTimeout(() => {
+            copyText.textContent = originalText;
+            button.classList.remove("bg-green-100", "dark:bg-green-900");
+          }, 2000);
+        }
+
+        success("Code copied!", "The code has been copied to your clipboard.");
+      } catch (err) {
+        console.error("Failed to copy code:", err);
+        error("Copy failed", "Failed to copy code to clipboard.");
+      }
+    };
+
+    document.addEventListener("click", handleCopyClick);
+    return () => document.removeEventListener("click", handleCopyClick);
+  }, [isPreviewMode, success, error]);
+
   // Insert text at cursor position
   const insertAtCursor = (insertText: string, wrapSelection = false) => {
     const textarea = textareaRef.current;
@@ -337,7 +388,7 @@ export default function MarkdownEditor({
       <div className="relative">
         {isPreviewMode ? (
           <div
-            className="p-4 min-h-[300px] overflow-auto"
+            className="markdown-preview p-6 min-h-[300px] overflow-auto prose prose-sm max-w-none dark:prose-invert"
             style={{ minHeight }}
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />

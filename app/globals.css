@@ -214,13 +214,8 @@
   }
 }
 
-/* 自定义代码高亮样式 */
+/* Prism.js 语法高亮样式 */
 @layer components {
-  /* 代码块样式 */
-  pre[class*="language-"] {
-    @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200;
-  }
-
   /* 语法高亮颜色 */
   .token.comment,
   .token.prolog,
@@ -275,5 +270,55 @@
   .token.important,
   .token.variable {
     @apply text-yellow-600 dark:text-yellow-400;
+  }
+
+  /* Markdown预览样式 */
+  .markdown-preview {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  .markdown-preview h1:first-child,
+  .markdown-preview h2:first-child,
+  .markdown-preview h3:first-child {
+    @apply mt-0;
+  }
+
+  .markdown-preview a {
+    @apply break-words;
+  }
+
+  .markdown-preview pre {
+    @apply overflow-x-auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) transparent;
+  }
+
+  .markdown-preview pre::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .markdown-preview pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .markdown-preview pre::-webkit-scrollbar-thumb {
+    background: rgb(156 163 175);
+    border-radius: 4px;
+  }
+
+  .markdown-preview pre::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
+  }
+
+  .dark .markdown-preview pre {
+    scrollbar-color: rgb(75 85 99) transparent;
+  }
+
+  .dark .markdown-preview pre::-webkit-scrollbar-thumb {
+    background: rgb(75 85 99);
+  }
+
+  .dark .markdown-preview pre::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
   }
 }

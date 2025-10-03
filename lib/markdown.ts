@@ -1,5 +1,13 @@
 import { marked } from "marked";
 import Prism from "prismjs";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-tsx";
+import "prismjs/components/prism-css";
+import "prismjs/components/prism-json";
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-python";
 
 // 配置 marked 选项
 marked.setOptions({
@@ -12,14 +20,16 @@ marked.setOptions({
 const renderer = new marked.Renderer();
 
 // 标题
-renderer.heading = ({ text, depth }) => {
+renderer.heading = (token) => {
+  const text = token.text;
+  const depth = token.depth;
   const classes = {
-    1: "text-2xl font-bold mt-6 mb-4",
-    2: "text-xl font-semibold mt-6 mb-4",
-    3: "text-lg font-semibold mt-6 mb-3",
-    4: "text-base font-semibold mt-4 mb-2",
-    5: "text-sm font-semibold mt-4 mb-2",
-    6: "text-xs font-semibold mt-4 mb-2",
+    1: "text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100",
+    2: "text-2xl font-semibold mt-6 mb-4 text-gray-900 dark:text-gray-100",
+    3: "text-xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100",
+    4: "text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
+    5: "text-base font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
+    6: "text-sm font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100",
   };
   return `<h${depth} class="${
     classes[depth as keyof typeof classes]
@@ -27,18 +37,23 @@ renderer.heading = ({ text, depth }) => {
 };
 
 // 段落
-renderer.paragraph = ({ text }) => {
-  return `<p class="mb-4 leading-relaxed">${text}</p>`;
+renderer.paragraph = (token) => {
+  return `<p class="mb-4 leading-7 text-gray-700 dark:text-gray-300">${token.text}</p>`;
 };
 
 // 链接
-renderer.link = ({ href, title, text }) => {
+renderer.link = (token) => {
+  const href = token.href;
+  const text = token.text;
+  const title = token.title;
   const titleAttr = title ? ` title="${title}"` : "";
-  return `<a href="${href}"${titleAttr} class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  return `<a href="${href}"${titleAttr} class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer">${text}</a>`;
 };
 
 // 列表
-renderer.list = ({ ordered, items }) => {
+renderer.list = (token) => {
+  const ordered = token.ordered;
+  const items = token.items.map((item) => renderer.listitem(item)).join("");
   const tag = ordered ? "ol" : "ul";
   const className = ordered
     ? "list-decimal ml-6 my-4 space-y-2"
@@ -46,66 +61,111 @@ renderer.list = ({ ordered, items }) => {
   return `<${tag} class="${className}">${items}</${tag}>`;
 };
 
-renderer.listitem = ({ text }) => {
-  return `<li class="leading-relaxed">${text}</li>`;
+renderer.listitem = (token) => {
+  return `<li class="leading-7 text-gray-700 dark:text-gray-300">${token.text}</li>`;
 };
 
 // 引用
-renderer.blockquote = ({ text }) => {
-  return `<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-4 text-gray-600 dark:text-gray-400">${text}</blockquote>`;
+renderer.blockquote = (token) => {
+  return `<blockquote class="border-l-4 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 pl-4 py-2 italic my-4 text-gray-700 dark:text-gray-300 rounded">${token.text}</blockquote>`;
 };
 
-// 代码块
-renderer.code = ({ text, lang }) => {
-  let highlighted = text;
+// 代码块 - 添加复制按钮
+renderer.code = (token) => {
+  const code = token.text;
+  const lang = token.lang || "";
+  let highlighted = code;
 
   // 尝试使用 Prism 高亮
   if (lang && Prism.languages[lang]) {
     try {
-      highlighted = Prism.highlight(text, Prism.languages[lang], lang);
+      highlighted = Prism.highlight(code, Prism.languages[lang], lang);
     } catch (e) {
       console.warn("Prism highlighting failed:", e);
+      highlighted = code; // 如果失败，使用原始代码
     }
   }
 
-  const langClass = lang ? ` language-${lang}` : "";
-  return `<pre class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4"><code class="${langClass}">${highlighted}</code></pre>`;
+  const langLabel = lang
+    ? `<span class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase">${lang}</span>`
+    : "";
+  const escapedCode = code.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+  return `<div class="relative my-6 group">
+    <div class="flex items-center justify-between bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-t-lg">
+      ${langLabel}
+      <button 
+        type="button"
+        class="copy-code-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 rounded transition-colors duration-200"
+        data-code="${escapedCode}"
+        title="Copy code"
+      >
+        <svg class="copy-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <span class="copy-text">Copy</span>
+      </button>
+    </div>
+    <pre class="bg-gray-50 dark:bg-gray-800 p-4 rounded-b-lg overflow-x-auto border border-gray-200 dark:border-gray-700"><code class="language-${lang} text-sm">${highlighted}</code></pre>
+  </div>`;
 };
 
 // 行内代码
-renderer.codespan = ({ text }) => {
-  return `<code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono">${text}</code>`;
+renderer.codespan = (token) => {
+  return `<code class="bg-gray-100 dark:bg-gray-800 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded text-sm font-mono">${token.text}</code>`;
 };
 
 // 图片
-renderer.image = ({ href, title, text }) => {
+renderer.image = (token) => {
+  const href = token.href;
+  const text = token.text;
+  const title = token.title;
   const titleAttr = title ? ` title="${title}"` : "";
-  return `<img src="${href}" alt="${text}"${titleAttr} class="max-w-full h-auto rounded-lg my-4" />`;
+  return `<img src="${href}" alt="${text}"${titleAttr} class="max-w-full h-auto rounded-lg my-6 shadow-md" />`;
 };
 
 // 水平线
 renderer.hr = () => {
-  return `<hr class="my-8 border-gray-200 dark:border-gray-700">`;
+  return `<hr class="my-8 border-t-2 border-gray-200 dark:border-gray-700">`;
 };
 
 // 表格
-renderer.table = ({ header, rows }) => {
-  return `<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 my-4 border border-gray-200 dark:border-gray-700">
-    <thead class="bg-gray-50 dark:bg-gray-800">${header}</thead>
-    <tbody>${rows}</tbody>
-  </table>`;
+renderer.table = (token) => {
+  const header = token.header.map((cell) => renderer.tablecell(cell)).join("");
+  const rows = token.rows
+    .map((row) => {
+      const cells = row.map((cell) => renderer.tablecell(cell)).join("");
+      return `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">${cells}</tr>`;
+    })
+    .join("");
+
+  return `<div class="overflow-x-auto my-6">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <thead class="bg-gray-100 dark:bg-gray-800">
+        <tr>${header}</tr>
+      </thead>
+      <tbody class="bg-white dark:bg-gray-900">${rows}</tbody>
+    </table>
+  </div>`;
 };
 
-renderer.tablerow = ({ text }) => {
-  return `<tr class="border-b border-gray-200 dark:border-gray-700">${text}</tr>`;
+renderer.tablecell = (token) => {
+  const tag = token.header ? "th" : "td";
+  const className = token.header
+    ? "px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+    : "px-4 py-3 text-sm text-gray-700 dark:text-gray-300";
+  return `<${tag} class="${className}">${token.text}</${tag}>`;
 };
 
-renderer.tablecell = ({ text, header }) => {
-  const tag = header ? "th" : "td";
-  const className = header
-    ? "px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-    : "px-4 py-3 whitespace-nowrap text-sm";
-  return `<${tag} class="${className}">${text}</${tag}>`;
+// 强调（加粗）
+renderer.strong = (token) => {
+  return `<strong class="font-bold text-gray-900 dark:text-gray-100">${token.text}</strong>`;
+};
+
+// 斜体
+renderer.em = (token) => {
+  return `<em class="italic text-gray-800 dark:text-gray-200">${token.text}</em>`;
 };
 
 // 使用 marked 处理 markdown
