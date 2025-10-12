@@ -25,7 +25,7 @@ import {
 } from "@/lib/actions/post";
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
-import { Loader2, X, ArrowLeft, Camera } from "lucide-react";
+import { Loader2, X, ArrowLeft, Camera, Wand2 } from "lucide-react";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { logger } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,8 @@ export default function PostFormPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isGeneratingCover, setIsGeneratingCover] = useState(false);
+  const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
   const { success, error } = useSemanticToast();
   const router = useRouter();
@@ -279,6 +281,133 @@ export default function PostFormPage() {
     setPreviewImageUrl("");
   };
 
+  const handleGenerateBrief = async () => {
+    const content = form.getValues("content");
+
+    if (!content.trim()) {
+      error(
+        "Content required",
+        "Please enter a content before generating a brief."
+      );
+      return;
+    }
+
+    setIsGeneratingBrief(true);
+
+    try {
+      const response = await fetch("/api/ai/generate-content", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "meta-description",
+          content: content.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to generate brief");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.content) {
+        form.setValue("brief", data.content);
+        success(
+          "Brief generated successfully!",
+          "AI-generated brief has been created and set."
+        );
+      } else {
+        error(
+          "Generation failed",
+          data.error || "Failed to generate brief. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("AI brief generation error:", err);
+      error(
+        "Generation failed",
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
+    } finally {
+      setIsGeneratingBrief(false);
+    }
+  };
+
+  const handleGenerateCover = async () => {
+    const title = form.getValues("title");
+    const brief = form.getValues("brief");
+
+    if (!title.trim()) {
+      error(
+        "Title required",
+        "Please enter a title before generating a cover image."
+      );
+      return;
+    }
+
+    if (!brief.trim()) {
+      error(
+        "Brief required",
+        "Please generate a brief first before generating a cover image."
+      );
+      return;
+    }
+
+    setIsGeneratingCover(true);
+
+    try {
+      const response = await fetch("/api/ai/generate-cover", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          summary: brief.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to generate cover image");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.image) {
+        const imageData = data.image;
+
+        // Use the image URL directly - no need to upload to Cloudinary!
+        form.setValue("coverImage", imageData);
+        setPreviewImageUrl(imageData);
+        success(
+          "Cover generated successfully!",
+          "AI-generated cover image has been created and set."
+        );
+      } else {
+        error(
+          "Generation failed",
+          data.error || "Failed to generate cover image. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("AI cover generation error:", err);
+      error(
+        "Generation failed",
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
+    } finally {
+      setIsGeneratingCover(false);
+    }
+  };
+
   return (
     <div className="bg-background min-h-full">
       <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
@@ -386,7 +515,9 @@ export default function PostFormPage() {
                               className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
                               onClick={handleRemoveImage}
                               disabled={
-                                form.formState.isSubmitting || isUploadingImage
+                                form.formState.isSubmitting ||
+                                isUploadingImage ||
+                                isGeneratingCover
                               }
                             >
                               <X className="h-3 w-3" />
@@ -394,29 +525,65 @@ export default function PostFormPage() {
                           </div>
                         )}
 
-                        {/* Upload Button */}
+                        {/* Upload and Generate Buttons */}
                         <div className="flex flex-col space-y-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleUploadClick}
-                            disabled={
-                              form.formState.isSubmitting || isUploadingImage
-                            }
-                            className="w-fit"
-                          >
-                            {isUploadingImage ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <Camera className="mr-2 h-4 w-4" />
-                                Upload Cover Image
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleUploadClick}
+                              disabled={
+                                form.formState.isSubmitting ||
+                                isUploadingImage ||
+                                isGeneratingCover
+                              }
+                              className="flex-1"
+                            >
+                              {isUploadingImage ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="mr-2 h-4 w-4" />
+                                  Upload Image
+                                </>
+                              )}
+                            </Button>
+
+                            <Button
+                              type="button"
+                              variant="default"
+                              onClick={handleGenerateCover}
+                              disabled={
+                                form.formState.isSubmitting ||
+                                isUploadingImage ||
+                                isGeneratingCover ||
+                                isGeneratingBrief ||
+                                !form.getValues("brief")?.trim()
+                              }
+                              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                            >
+                              {isGeneratingCover ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Generating...
+                                </>
+                              ) : (
+                                <>
+                                  <Wand2 className="mr-2 h-4 w-4" />
+                                  Generate with AI
+                                </>
+                              )}
+                            </Button>
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">
+                            Upload your own image or generate one with AI using
+                            your title and brief description. Brief is required
+                            for AI generation.
+                          </p>
                         </div>
 
                         {/* Hidden file input */}
@@ -442,12 +609,44 @@ export default function PostFormPage() {
                   <FormItem>
                     <FormLabel>Brief / Excerpt</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Short description of the post"
-                        disabled={form.formState.isSubmitting}
-                        rows={3}
-                        {...field}
-                      />
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Short description of the post"
+                          disabled={
+                            form.formState.isSubmitting || isGeneratingBrief
+                          }
+                          rows={3}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateBrief}
+                          disabled={
+                            form.formState.isSubmitting ||
+                            isGeneratingBrief ||
+                            isGeneratingCover
+                          }
+                          className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                        >
+                          {isGeneratingBrief ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating Brief...
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="mr-2 h-4 w-4" />
+                              Generate Brief with AI
+                            </>
+                          )}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Generate a brief description using AI based on your
+                          title.
+                        </p>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

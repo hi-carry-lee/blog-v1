@@ -35,6 +35,18 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
+      // Pollinations.ai 图片
+      {
+        protocol: "https",
+        hostname: "image.pollinations.ai",
+        pathname: "/**",
+      },
+      // Placeholder 图片
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -73,7 +73,7 @@ export default async function PostsPage({
                     href={`/posts/${post.slug}`}
                     className="group"
                   >
-                    <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 border-border">
+                    <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 border-border hover:scale-101">
                       {/* Cover Image */}
                       <div className="relative w-full h-56 bg-muted overflow-hidden">
                         {post.coverImage ? (
@@ -81,7 +81,7 @@ export default async function PostsPage({
                             src={post.coverImage}
                             alt={post.title}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500 p-2"
+                            className="object-cover group-hover:scale-101 transition-transform duration-500 p-2"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
