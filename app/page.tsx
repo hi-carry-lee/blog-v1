@@ -49,7 +49,7 @@ export default function HomePage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:scale-103 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="relative w-full h-32 rounded-lg mb-4 overflow-hidden">
                   <Image
@@ -69,7 +69,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:scale-103 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="relative w-full h-32 rounded-lg mb-4 overflow-hidden">
                   <Image
@@ -89,7 +89,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:scale-103 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="relative w-full h-32 rounded-lg mb-4 overflow-hidden">
                   <Image
@@ -109,7 +109,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:scale-103 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="relative w-full h-32 rounded-lg mb-4 overflow-hidden">
                   <Image

@@ -4,6 +4,7 @@ import { prisma } from "../db";
 import { PostFormData, postSchema } from "../zod-validations";
 import { logger } from "../logger";
 import { auth } from "@/auth";
+import { inngest } from "../inngest/client";
 
 // 博客文章类型（包含关联数据）
 export type PostWithRelations = {
@@ -239,6 +240,21 @@ export async function createPost(data: PostFormData) {
       id: newPost.id,
       title: newPost.title,
     });
+
+    // 创建文章后，触发 embedding 生成
+    try {
+      await inngest.send({
+        name: "post/embedding.generate",
+        data: { postId: newPost.id },
+      });
+      logger.info("Embedding generation triggered", { postId: newPost.id });
+    } catch (inngestError) {
+      // 不要因为 Inngest 失败而让整个创建失败
+      logger.error("Failed to trigger embedding generation", {
+        postId: newPost.id,
+        error: inngestError,
+      });
+    }
 
     return {
       success: true,
