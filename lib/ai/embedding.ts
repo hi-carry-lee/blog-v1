@@ -2,10 +2,27 @@ import OpenAI from "openai";
 import { encoding_for_model, Tiktoken } from "tiktoken";
 
 // OpenAI Embedding 封装
-// 初始化 OpenAI 客户端
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// 延迟初始化 OpenAI 客户端（避免模块加载时读取环境变量）
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    const apiKey = process.env.AIHUBMIX_API_KEY;
+
+    if (!apiKey) {
+      throw new Error(
+        "Missing AIHUBMIX_API_KEY environment variable. Please check your .env file."
+      );
+    }
+
+    openai = new OpenAI({
+      baseURL: "https://aihubmix.com/v1",
+      apiKey: apiKey,
+    });
+  }
+
+  return openai;
+}
 
 // 当前版本 (1.0.22)：encoder.decode() 返回 Uint8Array，需要用 TextDecoder 转换
 //   为什么会有这个变化：
@@ -51,7 +68,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   try {
-    const response = await openai.embeddings.create({
+    const client = getOpenAIClient();
+    const response = await client.embeddings.create({
       model: EMBEDDING_MODEL,
       input: text,
       encoding_format: "float", // 返回浮点数数组
@@ -93,7 +111,8 @@ export async function batchGenerateEmbeddings(
   }
 
   try {
-    const response = await openai.embeddings.create({
+    const client = getOpenAIClient();
+    const response = await client.embeddings.create({
       model: EMBEDDING_MODEL,
       input: texts, // 数组形式，批量处理
       encoding_format: "float",
