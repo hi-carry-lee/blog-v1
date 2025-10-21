@@ -243,6 +243,7 @@ export async function createPost(data: PostFormData) {
 
     // 创建文章后，触发 embedding 生成
     try {
+      // 向 Inngest 服务发送一个事件，相当于"触发信号"
       await inngest.send({
         name: "post/embedding.generate",
         data: { postId: newPost.id },
@@ -254,6 +255,7 @@ export async function createPost(data: PostFormData) {
         postId: newPost.id,
         error: inngestError,
       });
+      // TODO: 发送邮件通知管理员
     }
 
     return {
