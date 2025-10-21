@@ -68,22 +68,22 @@ export async function insertEmbedding(data: {
 
   // 使用参数化查询，避免 SQL 注入
   await prisma.$executeRaw`
-    INSERT INTO post_embeddings (
-      id, post_id, content_type, text_chunk, embedding,
-      embedding_model, dimensions, chunk_index, token_count, created_at
-    ) VALUES (
-      gen_random_uuid(),
-      ${postId}::uuid,
-      ${contentType},
-      ${textChunk},
-      ${vectorToSQL(embedding)}::vector,
-      ${embeddingModel},
-      ${dimensions},
-      ${chunkIndex},
-      ${tokenCount},
-      NOW()
-    )
-  `;
+  INSERT INTO post_embeddings (
+    id, post_id, content_type, text_chunk, embedding,
+    embedding_model, dimensions, chunk_index, token_count, created_at
+  ) VALUES (
+    gen_random_uuid(),
+    ${postId}::text,
+    ${contentType}::text,
+    ${textChunk}::text,
+    ${vectorToSQL(embedding)}::vector,
+    ${embeddingModel}::text,
+    ${dimensions}::int4,
+    ${chunkIndex}::int4,
+    ${tokenCount}::int4,
+    NOW()
+  )
+`;
 }
 
 /**
@@ -120,14 +120,14 @@ export async function batchInsertEmbeddings(
           embedding_model, dimensions, chunk_index, token_count, created_at
         ) VALUES (
           gen_random_uuid(),
-          ${e.postId}::uuid,
-          ${e.contentType},
-          ${e.textChunk},
+          ${e.postId}::text,
+          ${e.contentType}::text,
+          ${e.textChunk}::text,
           ${vectorToSQL(e.embedding)}::vector,
-          ${DEFAULT_EMBEDDING_MODEL},
-          ${DEFAULT_DIMENSIONS},
-          ${e.chunkIndex},
-          ${e.tokenCount},
+          ${DEFAULT_EMBEDDING_MODEL}::text,
+          ${DEFAULT_DIMENSIONS}::int4,
+          ${e.chunkIndex}::int4,
+          ${e.tokenCount}::int4,
           NOW()
         )
       `;

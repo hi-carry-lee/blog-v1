@@ -1,4 +1,3 @@
-// lib/inngest/functions.ts
 import { inngest } from "./client";
 import { prisma } from "@/lib/db";
 import { generatePostEmbeddings } from "@/lib/ai/post-embedding";
@@ -15,7 +14,6 @@ export const processEmbedding = inngest.createFunction(
   },
   { event: "post/embedding.generate" },
   async ({ event, step, logger }) => {
-    // 使用类型断言来获得类型安全
     const typedEvent = event as EmbeddingGenerateEvent;
     const { postId } = typedEvent.data;
 

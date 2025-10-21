@@ -137,27 +137,27 @@ model Comment {
 
 model PostEmbedding {
   id     String @id @default(cuid())
-  postId String
+  postId String @map("post_id")
 
   // 嵌入的内容类型
-  contentType String // 'title' | 'content' | 'summary' | 'full'
+  contentType String @map("content_type") // 'title' | 'content' | 'summary' | 'full'
 
   // 用于生成 embedding 的原始文本片段
-  textChunk String @db.Text
+  textChunk String @map("text_chunk") @db.Text
 
   // 向量数据 (注意：Prisma 原生不支持 vector 类型，需要使用 Unsupported)
   embedding Unsupported("vector(1536)") // 1536 是 OpenAI 的维度
 
   // 元数据
-  chunkIndex Int? // 如果文章被分成多个块，记录顺序
-  tokenCount Int? // 这个 chunk 的 token 数量
-  modelName  String @default("text-embedding-3-small") // 使用的模型
+  chunkIndex Int?   @map("chunk_index") // 如果文章被分成多个块，记录顺序
+  tokenCount Int?   @map("token_count") // 这个 chunk 的 token 数量
+  modelName  String @default("text-embedding-3-small") @map("embedding_model")
   // OpenAI text-embedding-3-small: 1536 维
   // OpenAI text-embedding-3-large: 3072 维
   // 以后换模型时，可以通过这个字段识别旧数据
   dimensions Int    @default(1536) // 记录维度，方便以后迁移模型
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
