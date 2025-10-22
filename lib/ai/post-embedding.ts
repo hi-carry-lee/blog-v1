@@ -11,6 +11,7 @@ import {
   deleteEmbeddingsByPostId,
   searchSimilarEmbeddings,
 } from "../vector";
+import { prisma } from "../db";
 
 export interface Post {
   id: string;
@@ -105,41 +106,85 @@ export async function searchPosts(
   options: {
     limit?: number;
     minSimilarity?: number;
+    page?: number;
   } = {}
 ) {
-  const { limit = 10, minSimilarity = 0.7 } = options;
+  const { limit = 10, minSimilarity = 0.7, page = 1 } = options;
 
-  // 1. 生成查询向量
-  const queryEmbedding = await generateEmbedding(query);
+  try {
+    // 1. Generate query embedding
+    const queryEmbedding = await generateEmbedding(query);
 
-  // 2. 向量搜索
-  const results = await searchSimilarEmbeddings(queryEmbedding, {
-    limit: limit * 2, // 多取一些，因为要去重
-    minSimilarity,
-  });
+    // 2. Vector search
+    const results = await searchSimilarEmbeddings(queryEmbedding, {
+      limit: limit * 2, // Get more for deduplication
+      minSimilarity,
+    });
 
-  // 3. 按文章去重（多个 chunk 可能属于同一篇）
-  const uniquePosts = new Map<string, (typeof results)[0]>();
-
-  for (const result of results) {
-    const existing = uniquePosts.get(result.post_id);
-
-    // 保留相似度更高的
-    if (!existing || result.similarity > existing.similarity) {
-      uniquePosts.set(result.post_id, result);
+    // 3. Deduplicate by post
+    const uniquePosts = new Map<string, (typeof results)[0]>();
+    for (const result of results) {
+      const existing = uniquePosts.get(result.post_id);
+      if (!existing || result.similarity > existing.similarity) {
+        uniquePosts.set(result.post_id, result);
+      }
     }
-  }
 
-  // 4. 排序并限制数量
-  return Array.from(uniquePosts.values())
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, limit)
-    .map((r) => ({
-      postId: r.post_id,
-      title: r.post_title,
-      slug: r.post_slug,
-      snippet: r.text_chunk.slice(0, 200) + "...",
-      similarity: r.similarity,
-      contentType: r.content_type,
-    }));
+    // 4. Get full post data for the unique posts
+    const postIds = Array.from(uniquePosts.keys());
+    const posts = await prisma.post.findMany({
+      where: {
+        id: { in: postIds },
+        published: true, // Only published posts
+      },
+      include: {
+        category: {
+          select: { id: true, name: true, slug: true },
+        },
+        author: {
+          select: { id: true, name: true, image: true },
+        },
+        tags: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+      orderBy: { publishedAt: "desc" },
+    });
+
+    // 5. Combine with search metadata
+    const enrichedPosts = posts.map((post) => {
+      const searchResult = uniquePosts.get(post.id);
+      return {
+        ...post,
+        similarity: searchResult?.similarity || 0,
+        snippet: searchResult?.text_chunk?.slice(0, 200) + "..." || post.brief,
+      };
+    });
+
+    // 6. Sort by similarity and apply pagination
+    const sortedPosts = enrichedPosts
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice((page - 1) * limit, page * limit);
+
+    const totalPages = Math.ceil(enrichedPosts.length / limit);
+
+    return {
+      success: true,
+      posts: sortedPosts,
+      totalCount: enrichedPosts.length,
+      currentPage: page,
+      totalPages,
+      searchQuery: query,
+    };
+  } catch (error) {
+    console.error("Search posts error:", error);
+    return {
+      success: false,
+      posts: [],
+      totalCount: 0,
+      currentPage: page,
+      totalPages: 0,
+      searchQuery: query,
+    };
+  }
 }

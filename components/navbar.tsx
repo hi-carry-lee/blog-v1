@@ -1,8 +1,9 @@
 "use client";
 
-import { Search, Sun, Moon, Menu, X } from "lucide-react";
+import { Sun, Moon, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import SearchInput from "@/components/search-input";
 import Link from "next/link";
 import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { useSession } from "next-auth/react";
@@ -42,13 +43,14 @@ export function Navbar() {
 
         {/* Desktop Search Bar - Hidden on mobile */}
         <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
-          <div className="relative flex-1">
+          {/* <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search"
               className="pl-10 bg-input border-border"
             />
-          </div>
+          </div> */}
+          <SearchInput className="flex-1" />
         </div>
 
         {/* Desktop Navigation - Hidden on mobile */}
@@ -152,13 +154,14 @@ export function Navbar() {
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-4">
             {/* Mobile Search */}
-            <div className="relative">
+            {/* <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="Search"
                 className="pl-10 bg-input border-border"
               />
-            </div>
+            </div> */}
+            <SearchInput />
 
             {/* Mobile Navigation Links */}
             <nav className="flex flex-col space-y-3">
