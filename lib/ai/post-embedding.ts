@@ -107,9 +107,15 @@ export async function searchPosts(
     limit?: number;
     minSimilarity?: number;
     page?: number;
+    onlyPublished?: boolean;
   } = {}
 ) {
-  const { limit = 10, minSimilarity = 0.7, page = 1 } = options;
+  const {
+    limit = 10,
+    minSimilarity = 0.5,
+    page = 1,
+    onlyPublished = true,
+  } = options; // 临时降低到 0.3 进行测试
 
   try {
     // 1. Generate query embedding
@@ -120,7 +126,6 @@ export async function searchPosts(
       limit: limit * 2, // Get more for deduplication
       minSimilarity,
     });
-
     // 3. Deduplicate by post
     const uniquePosts = new Map<string, (typeof results)[0]>();
     for (const result of results) {
@@ -135,7 +140,7 @@ export async function searchPosts(
     const posts = await prisma.post.findMany({
       where: {
         id: { in: postIds },
-        published: true, // Only published posts
+        ...(onlyPublished && { published: true }), // 可选的发布状态过滤
       },
       include: {
         category: {

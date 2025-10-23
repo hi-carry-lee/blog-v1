@@ -10,7 +10,7 @@ import { prisma } from "@/lib/db";
 // 配置常量
 const DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
 const DEFAULT_DIMENSIONS = 1536;
-const MAX_SEARCH_LIMIT = 100;
+const MAX_SEARCH_LIMIT = 200;
 const MIN_SIMILARITY_THRESHOLD = 0.0;
 const MAX_SIMILARITY_THRESHOLD = 1.0;
 

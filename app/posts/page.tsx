@@ -1,5 +1,6 @@
 import {
   queryPublishedPosts,
+  searchPostsWithFilters,
   getAllCategories,
   getAllTags,
 } from "@/lib/actions/post";
@@ -11,7 +12,13 @@ import { Button } from "@/components/ui/button";
 import { PostFilters } from "./post-filters";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 
 export default async function PostsPage({
   searchParams,
@@ -29,9 +36,21 @@ export default async function PostsPage({
   const tagSlug = (await searchParams).tag || "";
   const pageSize = 9; // 3x3 grid
 
+  // 决定使用向量搜索还是传统查询
+  const useVectorSearch = Boolean(searchTerm.trim());
+  console.log("useVectorSearch", useVectorSearch);
+
   // Fetch posts, categories and tags in parallel
   const [result, categoriesResult, tagsResult] = await Promise.all([
-    queryPublishedPosts(page, pageSize, searchTerm, categorySlug, tagSlug),
+    useVectorSearch
+      ? searchPostsWithFilters(searchTerm, {
+          page,
+          pageSize,
+          categorySlug,
+          tagSlug,
+          onlyPublished: true,
+        })
+      : queryPublishedPosts(page, pageSize, "", categorySlug, tagSlug),
     getAllCategories(),
     getAllTags(),
   ]);
@@ -58,6 +77,22 @@ export default async function PostsPage({
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
               All Articles
             </h1>
+
+            {/* Search Result Info */}
+            {useVectorSearch && (
+              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>
+                  AI-powered search results for{" "}
+                  <span className="font-semibold text-foreground">
+                    &quot;{searchTerm}&quot;
+                  </span>
+                  {result.success && result.totalCount > 0 && (
+                    <span> · Found {result.totalCount} relevant articles</span>
+                  )}
+                </span>
+              </div>
+            )}
 
             {/* Filters */}
             <PostFilters categories={categories} tags={tags} />
