@@ -14,6 +14,28 @@ const nextConfig: NextConfig = {
         : false, // 开发环境保留所有日志
   },
 
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            // 禁止你的网站被嵌入到任何<iframe>中,防止点击劫持攻击（Clickjacking）
+            // blog通常不需要被嵌入，用DENY没问题
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            // 强制浏览器严格按照Content-Type解析资源,防止MIME类型嗅探攻击——浏览器可能把文本文件当作脚本执行
+            // 通用防护，建议所有项目都加上
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+        ],
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       // Google 用户头像

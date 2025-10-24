@@ -3,6 +3,7 @@
 import { prisma } from "../db";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { checkCommentRateLimit } from "../rate-limit";
 
 // 评论类型（带作者和回复信息）
 export type CommentWithAuthor = {
@@ -112,6 +113,9 @@ async function getCommentDepth(commentId: string): Promise<number> {
 /**
  * 创建新评论
  */
+/**
+ * 创建新评论
+ */
 export async function createComment(
   postId: string,
   content: string,
@@ -124,6 +128,15 @@ export async function createComment(
       return {
         success: false,
         error: "Please log in first to comment",
+      };
+    }
+
+    // 限流检查
+    const canComment = await checkCommentRateLimit(session.user.id);
+    if (!canComment) {
+      return {
+        success: false,
+        error: "Too many comments. Please wait a moment and try again.",
       };
     }
 

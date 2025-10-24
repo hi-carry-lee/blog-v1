@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import Link from "next/link";
 
 export default function AboutPage() {
   const { data: session } = useSession();
@@ -83,34 +84,34 @@ export default function AboutPage() {
 
             {/* 社交媒体链接 */}
             <div className="flex items-center justify-center md:justify-start gap-4">
-              <a
+              <Link
                 href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-5 h-5" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Email"
               >
                 <Mail className="w-5 h-5" />
-              </a>
+              </Link>
             </div>
           </div>
 

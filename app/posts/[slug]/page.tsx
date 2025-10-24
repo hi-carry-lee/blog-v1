@@ -16,9 +16,10 @@ import { Button } from "@/components/ui/button";
 export default async function PostDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const result = await getPublishedPostBySlug(params.slug);
+  const { slug } = await params;
+  const result = await getPublishedPostBySlug(slug);
 
   if (!result.success || !result.post) {
     notFound();
