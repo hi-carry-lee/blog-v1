@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:create": "npx tsx scripts/create-test-posts.ts",
+    "test:report": "npx tsx scripts/generate-test-report.ts",
+    "inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.20",

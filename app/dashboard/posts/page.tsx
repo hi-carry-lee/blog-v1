@@ -36,7 +36,7 @@ export default async function PostsPage({ searchParams }: Props) {
 
   return (
     <div className="bg-background min-h-full">
-      <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-6xl mx-auto">
+      <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-7xl mx-auto">
         {/* Search Result Info */}
         {useVectorSearch && (
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">

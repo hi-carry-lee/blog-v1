@@ -185,7 +185,7 @@ export default function PostTable({
       </div>
 
       {/* Posts Table with Search */}
-      <div className="bg-card rounded-lg border border-border shadow-sm">
+      <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
         {/* Search Bar */}
         <div className="p-4 border-b border-border">
           <div className="flex gap-2">
@@ -205,128 +205,147 @@ export default function PostTable({
           </div>
         </div>
         {/* Table */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="px-4 md:px-6">Title</TableHead>
-              <TableHead className="px-4 md:px-6">Status</TableHead>
-              <TableHead className="px-4 md:px-6">Featured</TableHead>
-              <TableHead className="px-4 md:px-6">Views</TableHead>
-              <TableHead className="px-4 md:px-6">Category</TableHead>
-              <TableHead className="px-4 md:px-6">Date</TableHead>
-              <TableHead className="px-4 md:px-6">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {initialPosts.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="px-4 md:px-6 py-8 text-center text-muted-foreground"
-                >
-                  No posts found. Create your first post to get started.
-                </TableCell>
+                <TableHead className="px-4 md:px-6 min-w-[200px] max-w-xs">
+                  Title
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Status
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Featured
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Views
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Category
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Date
+                </TableHead>
+                <TableHead className="px-4 md:px-6 whitespace-nowrap">
+                  Actions
+                </TableHead>
               </TableRow>
-            ) : (
-              initialPosts.map((post) => (
-                <TableRow key={post.id}>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
-                    <div className="text-sm font-medium text-foreground">
-                      {post.title}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
-                    <Badge
-                      variant={post.published ? "default" : "outline"}
-                      className={
-                        post.published
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-transparent"
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                      }
-                    >
-                      {post.published ? "Published" : "Draft"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
-                    {post.featured ? (
-                      <Badge variant="secondary" className="text-xs">
-                        Featured
-                      </Badge>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium text-foreground">
-                        {post.views.toLocaleString()}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        views
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground">
-                    {post.category.name}
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground">
-                    {formatDate(post.createdAt)}
-                  </TableCell>
-                  <TableCell className="px-4 md:px-6 py-4 md:py-5">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(post)}
-                        className="h-8 w-8"
-                        disabled={isPending}
-                        title="Edit post"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleTogglePublish(post.id)}
-                        className={`h-8 w-8 ${
-                          post.published
-                            ? "text-orange-600 hover:text-orange-700"
-                            : "text-green-600 hover:text-green-700"
-                        }`}
-                        disabled={publishingId === post.id || isPending}
-                        title={
-                          post.published ? "Unpublish post" : "Publish post"
-                        }
-                      >
-                        {publishingId === post.id ? (
-                          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : post.published ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteClick(post.id, post.title)}
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        disabled={deletingId === post.id || isPending}
-                        title="Delete post"
-                      >
-                        {deletingId === post.id ? (
-                          <span className="w-4 h-4 border-2 border-destructive border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {initialPosts.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="px-4 md:px-6 py-8 text-center text-muted-foreground"
+                  >
+                    No posts found. Create your first post to get started.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                initialPosts.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 min-w-[200px] max-w-xs">
+                      <div
+                        className="text-sm font-medium text-foreground truncate"
+                        title={post.title}
+                      >
+                        {post.title}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap">
+                      <Badge
+                        variant={post.published ? "default" : "outline"}
+                        className={
+                          post.published
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-transparent"
+                            : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        }
+                      >
+                        {post.published ? "Published" : "Draft"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap">
+                      {post.featured ? (
+                        <Badge variant="secondary" className="text-xs">
+                          Featured
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium text-foreground">
+                          {post.views.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          views
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground whitespace-nowrap">
+                      {post.category.name}
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 text-sm text-muted-foreground whitespace-nowrap">
+                      {formatDate(post.createdAt)}
+                    </TableCell>
+                    <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(post)}
+                          className="h-8 w-8"
+                          disabled={isPending}
+                          title="Edit post"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleTogglePublish(post.id)}
+                          className={`h-8 w-8 ${
+                            post.published
+                              ? "text-orange-600 hover:text-orange-700"
+                              : "text-green-600 hover:text-green-700"
+                          }`}
+                          disabled={publishingId === post.id || isPending}
+                          title={
+                            post.published ? "Unpublish post" : "Publish post"
+                          }
+                        >
+                          {publishingId === post.id ? (
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : post.published ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(post.id, post.title)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          disabled={deletingId === post.id || isPending}
+                          title="Delete post"
+                        >
+                          {deletingId === post.id ? (
+                            <span className="w-4 h-4 border-2 border-destructive border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 0 && (
