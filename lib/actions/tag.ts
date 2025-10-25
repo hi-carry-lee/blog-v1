@@ -13,6 +13,14 @@ export type TagWithPosts = {
   postCount: number; // 直接用 postCount，不用 _count
 };
 
+export type TagResponse =
+  | {
+      success: true;
+      message: string;
+      tag: { id: string; name: string; slug: string };
+    }
+  | { success: false; error: string };
+
 /**
  * 🔍 验证标签唯一性（通用函数）
  *
@@ -179,7 +187,7 @@ export async function queryAllTags(
  * @param data - 标签表单数据 { name, slug }
  * @returns { success: boolean, message?: string, error?: string }
  */
-export async function createTag(data: TagFormData) {
+export async function createTag(data: TagFormData): Promise<TagResponse> {
   try {
     logger.info("Creating tag", data);
 
@@ -212,6 +220,11 @@ export async function createTag(data: TagFormData) {
     return {
       success: true,
       message: "Tag created successfully",
+      tag: {
+        id: newTag.id,
+        name: newTag.name,
+        slug: newTag.slug,
+      },
     };
   } catch (error) {
     logger.error("Create tag failed", error);

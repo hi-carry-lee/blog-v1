@@ -17,12 +17,7 @@ import {
 } from "@/components/ui/form";
 import { postSchema } from "@/lib/zod-validations";
 import { z } from "zod";
-import {
-  createPost,
-  validatePostSlug,
-  getAllCategories,
-  getAllTags,
-} from "@/lib/actions/post";
+import { createPost, getAllCategories, getAllTags } from "@/lib/actions/post";
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
 import { Loader2, X, ArrowLeft, Camera, Wand2 } from "lucide-react";
@@ -31,6 +26,9 @@ import { logger } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Plus } from "lucide-react";
+import CategoryCreateDialog from "./category-create-dialog";
+import TagCreateDialog from "./tag-create-dialog";
 
 // 创建一个匹配 Zod schema 输入类型的类型
 type PostFormInput = z.input<typeof postSchema>;
@@ -52,7 +50,6 @@ type UploadResponse =
   | { success: false; error: string };
 
 export default function PostFormPage() {
-  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags] = useState<string[]>([]);
@@ -60,6 +57,8 @@ export default function PostFormPage() {
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const { success, error } = useSemanticToast();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,32 +112,6 @@ export default function PostFormPage() {
   const handleTitleChange = (title: string) => {
     const generatedSlug = generateSlug(title);
     form.setValue("slug", generatedSlug);
-  };
-
-  // Slug 唯一性验证
-  const handleSlugBlur = async () => {
-    const slug = form.getValues("slug");
-
-    if (!slug) {
-      return;
-    }
-
-    setIsCheckingSlug(true);
-    try {
-      const result = await validatePostSlug(slug);
-      if (!result.success) {
-        form.setError("slug", {
-          type: "manual",
-          message: result.error || "Slug validation failed",
-        });
-      } else {
-        form.clearErrors("slug");
-      }
-    } catch (err) {
-      logger.error("Slug validation error", err);
-    } finally {
-      setIsCheckingSlug(false);
-    }
   };
 
   // 处理标签选择
@@ -408,6 +381,27 @@ export default function PostFormPage() {
     }
   };
 
+  // 处理分类创建成功
+  const handleCategorySuccess = (category: {
+    id: string;
+    name: string;
+    slug: string;
+  }) => {
+    setCategories((prev) => [...prev, category]);
+    form.setValue("categoryId", category.id);
+  };
+
+  // 处理标签创建成功
+  const handleTagSuccess = (tag: {
+    id: string;
+    name: string;
+    slug: string;
+  }) => {
+    setTags((prev) => [...prev, tag]);
+    const currentTagIds = form.getValues("tagIds") || [];
+    form.setValue("tagIds", [...currentTagIds, tag.id]);
+  };
+
   return (
     <div className="bg-background min-h-full">
       <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
@@ -448,39 +442,6 @@ export default function PostFormPage() {
                         }}
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Slug Field */}
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="post-slug"
-                          disabled={form.formState.isSubmitting}
-                          {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            handleSlugBlur();
-                          }}
-                        />
-                        {isCheckingSlug && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      URL-friendly identifier (auto-generated from title).
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -687,19 +648,34 @@ export default function PostFormPage() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <select
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex gap-2">
+                        <select
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                          className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Select a category</option>
+                          {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setIsCategoryDialogOpen(true)}
+                          disabled={form.formState.isSubmitting}
+                          className="h-10 w-10"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </FormControl>
+                    <FormDescription className="text-xs">
+                      Select a category or create a new one.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -714,29 +690,42 @@ export default function PostFormPage() {
                   return (
                     <FormItem>
                       <FormLabel>Tags</FormLabel>
-                      <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
-                        {tags.map((tag) => {
-                          const isSelected = currentTagIds.includes(tag.id);
-                          return (
-                            <Badge
-                              key={tag.id}
-                              variant={isSelected ? "default" : "outline"}
-                              className="cursor-pointer transition-colors"
-                              onClick={() => handleTagToggle(tag.id)}
-                            >
-                              {tag.name}
-                              {isSelected && <X className="ml-1 h-3 w-3" />}
-                            </Badge>
-                          );
-                        })}
-                        {tags.length === 0 && (
-                          <span className="text-sm text-muted-foreground">
-                            No tags available
-                          </span>
-                        )}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                          {tags.map((tag) => {
+                            const isSelected = currentTagIds.includes(tag.id);
+                            return (
+                              <Badge
+                                key={tag.id}
+                                variant={isSelected ? "default" : "outline"}
+                                className="cursor-pointer transition-colors"
+                                onClick={() => handleTagToggle(tag.id)}
+                              >
+                                {tag.name}
+                                {isSelected && <X className="ml-1 h-3 w-3" />}
+                              </Badge>
+                            );
+                          })}
+                          {tags.length === 0 && (
+                            <span className="text-sm text-muted-foreground">
+                              No tags available
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsTagDialogOpen(true)}
+                          disabled={form.formState.isSubmitting}
+                          className="w-full"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create New Tag
+                        </Button>
                       </div>
                       <FormDescription className="text-xs">
-                        Click tags to select/deselect
+                        Click tags to select/deselect or create new ones.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -818,6 +807,20 @@ export default function PostFormPage() {
             </form>
           </Form>
         </div>
+
+        {/* Create Category Dialog */}
+        <CategoryCreateDialog
+          open={isCategoryDialogOpen}
+          onOpenChange={setIsCategoryDialogOpen}
+          onSuccess={handleCategorySuccess}
+        />
+
+        {/* Create Tag Dialog */}
+        <TagCreateDialog
+          open={isTagDialogOpen}
+          onOpenChange={setIsTagDialogOpen}
+          onSuccess={handleTagSuccess}
+        />
       </div>
     </div>
   );
