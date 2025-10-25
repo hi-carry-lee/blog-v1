@@ -705,7 +705,7 @@ export async function queryPublishedPosts(
         where: whereCondition,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { publishedAt: "desc" },
+        orderBy: { createdAt: "desc" },
         include: {
           category: {
             select: {
@@ -735,6 +735,26 @@ export async function queryPublishedPosts(
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
+    // 手动排序：优先按 publishedAt，然后按 createdAt
+    const sortedPosts = posts.sort((a, b) => {
+      // 如果两个都有 publishedAt，按 publishedAt 排序
+      if (a.publishedAt && b.publishedAt) {
+        return (
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        );
+      }
+      // 如果只有 a 有 publishedAt，a 排在前面
+      if (a.publishedAt && !b.publishedAt) {
+        return -1;
+      }
+      // 如果只有 b 有 publishedAt，b 排在前面
+      if (!a.publishedAt && b.publishedAt) {
+        return 1;
+      }
+      // 如果都没有 publishedAt，按 createdAt 排序
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
     logger.info("Published posts query completed", {
       totalCount,
       totalPages,
@@ -744,7 +764,7 @@ export async function queryPublishedPosts(
 
     return {
       success: true,
-      posts: posts as PostWithRelations[],
+      posts: sortedPosts as PostWithRelations[],
       totalPages,
       currentPage: page,
       totalCount,
