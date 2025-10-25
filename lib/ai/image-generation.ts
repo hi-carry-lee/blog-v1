@@ -37,7 +37,7 @@ export async function generateBlogCover(
     // 2. 调用 DALL-E 3 生成图片
     const client = getOpenAIClient();
     const response = await client.images.generate({
-      model: "gpt-4o-image-vip",
+      model: "gpt-4o-image",
       prompt,
       size: "auto", // 16:9 比例
       quality: "medium",
@@ -45,7 +45,6 @@ export async function generateBlogCover(
       response_format: "b64_json",
       n: 1,
     });
-    console.log("response data from openai: ", response.data?.[0].b64_json);
 
     // 生成的图片文件，是base64编码的图片数据
     const imageData = response.data?.[0];

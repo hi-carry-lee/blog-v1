@@ -57,6 +57,7 @@ export default function PostFormPage() {
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
+  const [currentImagePublicId, setCurrentImagePublicId] = useState<string>("");
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const { success, error } = useSemanticToast();
@@ -192,6 +193,7 @@ export default function PostFormPage() {
         // Update form field and preview
         form.setValue("coverImage", uploadResponse.url);
         setPreviewImageUrl(uploadResponse.url);
+        setCurrentImagePublicId(uploadResponse.public_id);
         success(
           "Image uploaded successfully!",
           "Cover image has been uploaded and set."
@@ -244,9 +246,36 @@ export default function PostFormPage() {
     fileInputRef.current?.click();
   };
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = async () => {
+    // 如果有当前图片，从 Cloudinary 删除它
+    if (currentImagePublicId) {
+      try {
+        const response = await fetch("/api/upload/cleanup", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ public_id: currentImagePublicId }),
+        });
+
+        if (response.ok) {
+          success(
+            "Image deleted",
+            "Cover image has been removed from storage."
+          );
+        } else {
+          console.error("Failed to delete image from Cloudinary");
+        }
+      } catch (err) {
+        console.error("Failed to delete image from Cloudinary:", err);
+        error("Delete failed", "Failed to delete image from storage.");
+      }
+    }
+
+    // 清空表单和预览
     form.setValue("coverImage", "");
     setPreviewImageUrl("");
+    setCurrentImagePublicId("");
   };
 
   const handleGenerateBrief = async () => {
@@ -473,7 +502,7 @@ export default function PostFormPage() {
                               type="button"
                               variant="destructive"
                               size="icon"
-                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full transition-all duration-200 hover:scale-110 hover:shadow-lg hover:bg-red-600 active:scale-95"
                               onClick={handleRemoveImage}
                               disabled={
                                 form.formState.isSubmitting ||
@@ -481,7 +510,7 @@ export default function PostFormPage() {
                                 isGeneratingCover
                               }
                             >
-                              <X className="h-3 w-3" />
+                              <X className="h-3 w-3 transition-transform duration-200 hover:rotate-90" />
                             </Button>
                           </div>
                         )}
