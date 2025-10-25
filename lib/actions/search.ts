@@ -1,6 +1,6 @@
 "use server";
 
-import { searchPosts } from "@/lib/ai/post-embedding";
+import { searchPosts } from "@/lib/actions/post-embedding";
 
 export async function searchPostsAction(
   query: string,

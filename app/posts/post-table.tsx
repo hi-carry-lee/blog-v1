@@ -1,4 +1,4 @@
-import { Post } from "@/lib/ai/post-embedding";
+import { Post } from "@/lib/actions/post-embedding";
 
 export default function PostTable({ posts }: { posts: Post[] }) {
   return (

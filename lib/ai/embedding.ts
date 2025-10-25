@@ -1,28 +1,6 @@
 import OpenAI from "openai";
 import { encoding_for_model, Tiktoken } from "tiktoken";
-
-// OpenAI Embedding 封装
-// 延迟初始化 OpenAI 客户端（避免模块加载时读取环境变量）
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    const apiKey = process.env.AIHUBMIX_API_KEY;
-
-    if (!apiKey) {
-      throw new Error(
-        "Missing AIHUBMIX_API_KEY environment variable. Please check your .env file."
-      );
-    }
-
-    openai = new OpenAI({
-      baseURL: "https://aihubmix.com/v1",
-      apiKey: apiKey,
-    });
-  }
-
-  return openai;
-}
+import { getOpenAIClient } from "./openai-client";
 
 // 当前版本 (1.0.22)：encoder.decode() 返回 Uint8Array，需要用 TextDecoder 转换
 //   为什么会有这个变化：

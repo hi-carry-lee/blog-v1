@@ -4,7 +4,7 @@ import {
   chunkText,
   countTokens,
   MAX_TOKENS,
-} from "./embedding";
+} from "../ai/embedding";
 import {
   insertEmbedding,
   batchInsertEmbeddings,

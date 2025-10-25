@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateBlogCoverWithPollinations } from "@/lib/ai/image-generation-free";
+import { generateBlogCover } from "@/lib/ai/image-generation";
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, summary } = await request.json();
+    const { summary, category } = await request.json();
 
-    if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    if (!summary) {
+      return NextResponse.json(
+        { error: "Summary is required" },
+        { status: 400 }
+      );
     }
 
-    // Use the service layer to generate the image
-    const imageUrl = await generateBlogCoverWithPollinations(
-      title,
-      summary || ""
-    );
+    if (!category) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
+    }
+
+    const imageUrl = await generateBlogCover(summary, category);
 
     return NextResponse.json({
       success: true,

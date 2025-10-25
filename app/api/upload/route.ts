@@ -2,6 +2,16 @@
 import { v2 as cloudinary } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 
+/*
+为什么通过 API Router 上传图片？
+
+1. 文件上传的技术限制
+  Server Actions 在处理文件上传时有一些限制：
+  FormData 处理：Server Actions 更适合处理表单数据，但对于大文件（如图片）的流式处理支持有限
+  内存限制：Server Actions 有默认的请求体大小限制，对于图片上传可能不够
+  流式处理：图片上传需要流式处理，API 路由在这方面更灵活
+*/
+
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,

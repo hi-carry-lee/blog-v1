@@ -47,6 +47,10 @@ type Tag = {
   slug: string;
 };
 
+type UploadResponse =
+  | { success: true; url: string; public_id: string }
+  | { success: false; error: string };
+
 export default function PostFormPage() {
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -236,14 +240,7 @@ export default function PostFormPage() {
     }
   };
 
-  const uploadImage = async (
-    formData: FormData
-  ): Promise<{
-    success: boolean;
-    url: string;
-    public_id: string;
-    error?: string;
-  }> => {
+  const uploadImage = async (formData: FormData): Promise<UploadResponse> => {
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -265,8 +262,6 @@ export default function PostFormPage() {
       console.error("Upload error:", error);
       return {
         success: false,
-        url: "",
-        public_id: "",
         error: error instanceof Error ? error.message : "Upload failed",
       };
     }
@@ -341,6 +336,7 @@ export default function PostFormPage() {
   const handleGenerateCover = async () => {
     const title = form.getValues("title");
     const brief = form.getValues("brief");
+    const categoryId = form.getValues("categoryId"); // 获取选中的分类ID
 
     if (!title.trim()) {
       error(
@@ -358,6 +354,10 @@ export default function PostFormPage() {
       return;
     }
 
+    // 获取分类名称
+    const selectedCategory = categories.find((cat) => cat.id === categoryId);
+    const categoryName = selectedCategory?.name || "general";
+
     setIsGeneratingCover(true);
 
     try {
@@ -367,8 +367,8 @@ export default function PostFormPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: title.trim(),
           summary: brief.trim(),
+          category: categoryName,
         }),
       });
 

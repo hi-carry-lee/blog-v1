@@ -1,6 +1,6 @@
 import { inngest } from "./client";
 import { prisma } from "@/lib/db";
-import { generatePostEmbeddings } from "@/lib/ai/post-embedding";
+import { generatePostEmbeddings } from "@/lib/actions/post-embedding";
 import type { EmbeddingGenerateEvent } from "./types";
 
 // 用来给Inngest路由调用的函数

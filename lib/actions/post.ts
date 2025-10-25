@@ -1125,7 +1125,7 @@ export async function searchPostsWithFilters(
       );
 
       // 3. 执行向量搜索
-      const { searchPosts } = await import("../ai/post-embedding");
+      const { searchPosts } = await import("./post-embedding");
       const vectorResult = await searchPosts(searchQuery, {
         limit: pageSize - traditionalPosts.length, // 补充剩余数量
         minSimilarity: smartThreshold,

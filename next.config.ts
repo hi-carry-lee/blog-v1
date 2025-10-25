@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // 启用 Next.js 图片优化
+    unoptimized: false,
+    // 配置允许的远程图片域名
     remotePatterns: [
       // Google 用户头像
       {
@@ -51,7 +54,7 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      // Cloudinary 图片
+      // Cloudinary 图片 - 主要配置
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
@@ -70,6 +73,11 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    // 图片优化配置
+    formats: ["image/webp", "image/avif"], // 优先使用现代格式
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048], // 设备尺寸
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // 图片尺寸
+    minimumCacheTTL: 60, // 最小缓存时间（秒）
   },
 };
 

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  generateBlogContent,
-  generateMetaDescription,
-} from "@/lib/ai/content-generation";
+import { generateBlogContent } from "@/lib/ai/content-generation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,24 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let result: string;
-
-    switch (type) {
-      case "content":
-        result = await generateBlogContent(content);
-        break;
-      case "meta-description":
-        result = await generateMetaDescription(title, content);
-        break;
-      default:
-        return NextResponse.json(
-          {
-            error:
-              "Invalid type. Use 'content', 'outline', or 'meta-description'",
-          },
-          { status: 400 }
-        );
-    }
+    const result = await generateBlogContent(content);
 
     return NextResponse.json({
       success: true,
