@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import Image from "next/image";
 import Link from "next/link";
+import EnhancedSections from "@/components/enhanced-section";
 
 export default function HomePage() {
   return (
@@ -132,28 +132,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-20 px-6 bg-secondary/30">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4 text-foreground">
-            Stay Updated
-          </h2>
-          <p className="text-muted-foreground mb-8 text-lg">
-            Get the latest news and updates about our AI blog platform delivered
-            straight to your inbox.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <Input
-              placeholder="Enter your email"
-              className="flex-1 bg-background border-border"
-            />
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6">
-              Stay Updated
-            </Button>
-          </div>
-        </div>
-      </section>
+      <EnhancedSections />
 
       <Footer />
     </div>

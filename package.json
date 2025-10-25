@@ -14,8 +14,6 @@
     "inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest"
   },
   "dependencies": {
-    "@ai-sdk/google": "^2.0.20",
-    "@ai-sdk/openai": "^2.0.50",
     "@auth/prisma-adapter": "^2.10.0",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.1",
