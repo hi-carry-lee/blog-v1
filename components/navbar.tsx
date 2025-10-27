@@ -28,28 +28,14 @@ export function Navbar() {
       {/* Desktop and Mobile Header */}
       <div className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-4">
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="AI Blog Platform"
-            width={30}
-            height={30}
-            priority
-          />
-          <span className="font-semibold text-lg text-foreground">
+        <div className="flex items-center gap-2 border-border border-2 rounded-full p-2 bg-primary/10">
+          <Link href="/" className="font-semibold text-lg text-primary">
             AI Blog Platform
-          </span>
+          </Link>
         </div>
 
         {/* Desktop Search Bar - Hidden on mobile */}
         <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
-          {/* <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search"
-              className="pl-10 bg-input border-border"
-            />
-          </div> */}
           <SearchInput className="flex-1" />
         </div>
 
@@ -153,14 +139,6 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-4">
-            {/* Mobile Search */}
-            {/* <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search"
-                className="pl-10 bg-input border-border"
-              />
-            </div> */}
             <SearchInput />
 
             {/* Mobile Navigation Links */}

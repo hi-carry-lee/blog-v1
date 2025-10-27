@@ -34,11 +34,6 @@ export default async function PostDetailPage({
 
   // 获取评论
   const commentsResult = await getPostComments(post.id);
-  console.log(
-    "commentsResult.comments.length: ",
-    commentsResult.comments.length
-  );
-  console.log("commentsResult.comments: ", commentsResult.comments);
   const comments = commentsResult.comments || [];
 
   // 渲染markdown内容

@@ -10,8 +10,6 @@ import { Footer } from "@/components/footer";
 import {
   Github,
   Twitter,
-  Linkedin,
-  Mail,
   Briefcase,
   FileText,
   ExternalLink,
@@ -68,7 +66,7 @@ export default function AboutPage() {
       title: "GitHub",
       description: "Check out my code",
       icon: Github,
-      href: "https://github.com/yourusername",
+      href: "https://github.com/kaili-lab",
       external: true,
     },
   ];
@@ -125,18 +123,16 @@ export default function AboutPage() {
                   {/* 社交媒体链接 */}
                   <div className="flex justify-center gap-4 mb-6">
                     <Link
-                      href="https://github.com/hi-carry-lee"
+                      href="https://github.com/kaili-lab"
                       className="text-muted-foreground hover:text-primary transition-colors"
                       aria-label="GitHub"
-                      target="_blank"
                     >
                       <Github className="w-5 h-5" />
                     </Link>
                     <Link
-                      href="https://x.com/carrylee822"
+                      href="https://x.com/kaili_dev"
                       className="text-muted-foreground hover:text-primary transition-colors"
                       aria-label="Twitter"
-                      target="_blank"
                     >
                       <Twitter className="w-5 h-5" />
                     </Link>
@@ -144,7 +140,7 @@ export default function AboutPage() {
 
                   {/* CTA Button */}
                   <Button asChild className="w-full">
-                    <Link href="/portfolio">View Full Portfolio</Link>
+                    <Link href="https://kaili.dev">View Full Portfolio</Link>
                   </Button>
                 </Card>
               </div>
