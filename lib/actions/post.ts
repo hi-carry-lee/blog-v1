@@ -75,8 +75,6 @@ export async function queryAllPosts(
   searchTerm?: string
 ) {
   try {
-    logger.info("Querying posts", { page, pageSize, searchTerm });
-
     // 构建搜索条件
     const whereCondition = searchTerm
       ? {
@@ -122,13 +120,6 @@ export async function queryAllPosts(
     ]);
 
     const totalPages = Math.ceil(totalCount / pageSize);
-
-    logger.info("Posts query completed", {
-      totalCount,
-      totalPages,
-      currentPage: page,
-      returnedCount: posts.length,
-    });
 
     return {
       success: true,
@@ -216,26 +207,17 @@ export async function createPost(data: PostFormData) {
         coverImage: validatedData.coverImage || null,
         categoryId: validatedData.categoryId,
         authorId: session.user.id,
-        tagIds: validatedData.tagIds || [],
         published: validatedData.published,
         featured: validatedData.featured,
         metaTitle: validatedData.metaTitle,
         metaDescription: validatedData.metaDescription,
         publishedAt: validatedData.published ? new Date() : null,
+        // 在创建时直接连接标签
+        tags: {
+          connect: (validatedData.tagIds || []).map((id) => ({ id })),
+        },
       },
     });
-
-    // 如果有标签，建立关联
-    if (validatedData.tagIds && validatedData.tagIds.length > 0) {
-      await prisma.post.update({
-        where: { id: newPost.id },
-        data: {
-          tags: {
-            connect: validatedData.tagIds.map((id) => ({ id })),
-          },
-        },
-      });
-    }
 
     logger.info("Post created successfully", {
       id: newPost.id,
@@ -367,7 +349,6 @@ export async function updatePost(data: PostFormData, postId: string) {
         content: validatedData.content,
         coverImage: validatedData.coverImage || null,
         categoryId: validatedData.categoryId,
-        tagIds: validatedData.tagIds || [],
         published: validatedData.published,
         featured: validatedData.featured,
         metaTitle: validatedData.metaTitle,
@@ -379,7 +360,7 @@ export async function updatePost(data: PostFormData, postId: string) {
             : undefined,
         tags: {
           set: [], // 先清空现有关联
-          connect: validatedData.tagIds?.map((id) => ({ id })) || [],
+          connect: (validatedData.tagIds || []).map((id) => ({ id })),
         },
       },
     });
@@ -654,14 +635,6 @@ export async function queryPublishedPosts(
   tagSlug?: string
 ) {
   try {
-    logger.info("Querying published posts", {
-      page,
-      pageSize,
-      searchTerm,
-      categorySlug,
-      tagSlug,
-    });
-
     // 构建搜索条件
     const whereCondition: {
       published: boolean;
@@ -1033,16 +1006,6 @@ export async function searchPostsWithFilters(
       minSimilarity
     );
 
-    logger.info("Hybrid search with filters", {
-      searchQuery,
-      page,
-      pageSize,
-      categorySlug,
-      tagSlug,
-      onlyPublished,
-      smartThreshold,
-    });
-
     // 1. 先尝试传统模糊搜索
     const traditionalWhereCondition: {
       OR: Array<{
@@ -1116,14 +1079,6 @@ export async function searchPostsWithFilters(
     let vectorCount = 0;
 
     if (needsVectorSearch) {
-      logger.info(
-        "Traditional search results insufficient, trying vector search",
-        {
-          traditionalCount: traditionalPosts.length,
-          required: pageSize,
-        }
-      );
-
       // 3. 执行向量搜索
       const { searchPosts } = await import("./post-embedding");
       const vectorResult = await searchPosts(searchQuery, {
@@ -1238,16 +1193,6 @@ export async function searchPostsWithFilters(
 
     const totalCount = traditionalCount + vectorCount;
     const totalPages = Math.ceil(totalCount / pageSize);
-
-    logger.info("Hybrid search completed", {
-      totalCount,
-      totalPages,
-      currentPage: page,
-      returnedCount: sortedPosts.length,
-      traditionalCount: traditionalPosts.length,
-      vectorCount: vectorPosts.length,
-      searchType: needsVectorSearch ? "hybrid" : "traditional",
-    });
 
     return {
       success: true,

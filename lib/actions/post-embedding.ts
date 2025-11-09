@@ -12,6 +12,7 @@ import {
   searchSimilarEmbeddings,
 } from "../vector";
 import { prisma } from "../db";
+import { logger } from "../logger";
 
 export interface Post {
   id: string;
@@ -53,7 +54,6 @@ export async function generatePostEmbeddings(post: Post) {
       });
     } else {
       // 正文较长，需要分块
-      console.log(`📚 Post ${id} is long, chunking...`);
       const chunks = chunkText(content, {
         maxTokens: 500,
         overlap: 50,
@@ -74,11 +74,9 @@ export async function generatePostEmbeddings(post: Post) {
           tokenCount: chunk.tokenCount,
         }))
       );
-
-      console.log(`✅ Generated ${chunks.length} chunks for post ${id}`);
     }
   } catch (error) {
-    console.error(`Failed to generate embeddings for post ${post.id}:`, error);
+    logger.error(`Failed to generate embeddings for post ${post.id}:`, error);
     throw error;
   }
 }
@@ -87,15 +85,11 @@ export async function generatePostEmbeddings(post: Post) {
  * 更新文章的 embeddings
  */
 export async function updatePostEmbeddings(post: Post) {
-  console.log(`🔄 Updating embeddings for post ${post.id}`);
-
   // 1. 删除旧数据
   await deleteEmbeddingsByPostId(post.id);
 
   // 2. 重新生成
   await generatePostEmbeddings(post);
-
-  console.log(`✅ Updated embeddings for post ${post.id}`);
 }
 
 /**
@@ -182,7 +176,7 @@ export async function searchPosts(
       searchQuery: query,
     };
   } catch (error) {
-    console.error("Search posts error:", error);
+    logger.error("Search posts error:", error);
     return {
       success: false,
       posts: [],

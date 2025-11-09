@@ -4,6 +4,7 @@ import {
   getAllCategories,
   getAllTags,
 } from "@/lib/actions/post";
+import { auth } from "@/auth";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Info,
 } from "lucide-react";
 
 export default async function PostsPage({
@@ -30,15 +32,18 @@ export default async function PostsPage({
     tag?: string;
   }>;
 }) {
-  const page = Number((await searchParams).page) || 1;
-  const searchTerm = (await searchParams).search || "";
-  const categorySlug = (await searchParams).category || "";
-  const tagSlug = (await searchParams).tag || "";
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const searchTerm = params.search || "";
+  const categorySlug = params.category || "";
+  const tagSlug = params.tag || "";
   const pageSize = 9; // 3x3 grid
 
+  const session = await auth();
+  const isAuthenticated = Boolean(session?.user?.id);
+
   // 决定使用向量搜索还是传统查询
-  const useVectorSearch = Boolean(searchTerm.trim());
-  console.log("useVectorSearch", useVectorSearch);
+  const useVectorSearch = isAuthenticated && Boolean(searchTerm.trim());
 
   // Fetch posts, categories and tags in parallel
   const [result, categoriesResult, tagsResult] = await Promise.all([
@@ -50,7 +55,7 @@ export default async function PostsPage({
           tagSlug,
           onlyPublished: true,
         })
-      : queryPublishedPosts(page, pageSize, "", categorySlug, tagSlug),
+      : queryPublishedPosts(page, pageSize, searchTerm, categorySlug, tagSlug),
     getAllCategories(),
     getAllTags(),
   ]);
@@ -97,6 +102,23 @@ export default async function PostsPage({
             {/* Filters */}
             <PostFilters categories={categories} tags={tags} />
           </div>
+
+          {/* Login prompt for AI search */}
+          {!isAuthenticated && Boolean(searchTerm.trim()) && (
+            <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground bg-muted border border-border rounded-lg px-4 py-3">
+              <Info className="w-4 h-4" />
+              <span>
+                Showing keyword-based results.{" "}
+                <Link
+                  href="/login"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Log in
+                </Link>{" "}
+                to unlock AI-powered semantic search.
+              </span>
+            </div>
+          )}
 
           {/* Posts Grid */}
           {result.success && result.posts.length > 0 ? (

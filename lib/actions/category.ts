@@ -275,7 +275,7 @@ export async function queryAllCategories(page: number = 1, limit: number = 5) {
       totalCount,
     };
   } catch (error) {
-    console.error("Category query error:", error);
+    logger.error("Category query error:", error);
     if (error instanceof Error) {
       return {
         success: false,
@@ -329,7 +329,7 @@ export async function deleteCategory(categoryId: string) {
       message: "Category deleted successfully!",
     };
   } catch (error) {
-    console.error("Category deletion error:", error);
+    logger.error("Category deletion error:", error);
     if (error instanceof Error) {
       return {
         success: false,

@@ -3,7 +3,7 @@ import { generateBlogContent } from "@/lib/ai/content-generation";
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, content, title } = await request.json();
+    const { type, content } = await request.json();
 
     if (!type || !content) {
       return NextResponse.json(

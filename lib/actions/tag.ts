@@ -130,8 +130,6 @@ export async function queryAllTags(
   totalCount: number;
 }> {
   try {
-    logger.info("Querying tags", { page, pageSize });
-
     // 1️⃣ 并行查询：标签列表 + 总数
     const [tags, totalCount] = await Promise.all([
       // 查询当前页的标签，并计算每个标签的文章数
@@ -162,13 +160,6 @@ export async function queryAllTags(
     // 3️⃣ 计算总页数
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    logger.info("Tags query completed", {
-      totalCount,
-      totalPages,
-      currentPage: page,
-      returnedCount: transformedTags.length,
-    });
-
     return {
       tags: transformedTags,
       totalPages,
@@ -189,8 +180,6 @@ export async function queryAllTags(
  */
 export async function createTag(data: TagFormData): Promise<TagResponse> {
   try {
-    logger.info("Creating tag", data);
-
     // 1️⃣ 数据验证
     const validatedData = tagSchema.parse(data);
 
@@ -244,8 +233,6 @@ export async function createTag(data: TagFormData): Promise<TagResponse> {
  */
 export async function updateTag(data: TagFormData, tagId: string) {
   try {
-    logger.info("Updating tag", { tagId, data });
-
     // 1️⃣ 数据验证
     const validatedData = tagSchema.parse(data);
 
@@ -312,8 +299,6 @@ export async function updateTag(data: TagFormData, tagId: string) {
  */
 export async function deleteTag(tagId: string) {
   try {
-    logger.info("Attempting to delete tag", { tagId });
-
     // 1️⃣ 检查标签是否存在
     const existingTag = await prisma.tag.findUnique({
       where: { id: tagId },
@@ -375,8 +360,6 @@ export async function deleteTag(tagId: string) {
  */
 export async function queryTagById(tagId: string) {
   try {
-    logger.info("Querying tag by ID", { tagId });
-
     const tag = await prisma.tag.findUnique({
       where: { id: tagId },
       include: {
@@ -387,7 +370,6 @@ export async function queryTagById(tagId: string) {
     });
 
     if (!tag) {
-      logger.warn("Tag not found", { tagId });
       return null;
     }
 
@@ -399,12 +381,6 @@ export async function queryTagById(tagId: string) {
       createdAt: tag.createdAt,
       postCount: tag._count.posts,
     };
-
-    logger.info("Tag found", {
-      tagId,
-      name: tag.name,
-      postCount: transformedTag.postCount,
-    });
 
     return transformedTag;
   } catch (error) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { searchPosts } from "@/lib/actions/post-embedding";
+import { logger } from "@/lib/logger";
 
 export async function searchPostsAction(
   query: string,
@@ -26,7 +27,7 @@ export async function searchPostsAction(
     const result = await searchPosts(query, options);
     return result;
   } catch (error) {
-    console.error("Search action error:", error);
+    logger.error("Search action error:", error);
     return {
       success: false,
       error: "搜索失败，请稍后重试",

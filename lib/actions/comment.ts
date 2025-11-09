@@ -4,6 +4,7 @@ import { prisma } from "../db";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { checkCommentRateLimit } from "../rate-limit";
+import { logger } from "../logger";
 
 // 评论类型（带作者和回复信息）
 export type CommentWithAuthor = {
@@ -84,7 +85,7 @@ export async function getPostComments(postId: string) {
       comments: comments as unknown as CommentWithAuthor[],
     };
   } catch (error) {
-    console.error("Failed to fetch comments:", error);
+    logger.error("Failed to fetch comments:", error);
     return {
       success: false,
       error: "Failed to load comments",
@@ -220,7 +221,7 @@ export async function createComment(
       comment,
     };
   } catch (error) {
-    console.error("Failed to create comment:", error);
+    logger.error("Failed to create comment:", error);
     return {
       success: false,
       error: "Failed to post comment. Please try again.",
@@ -242,7 +243,7 @@ export async function getPostCommentsCount(postId: string) {
 
     return { success: true, count };
   } catch (error) {
-    console.error("Failed to fetch comments count:", error);
+    logger.error("Failed to fetch comments count:", error);
     return { success: false, count: 0 };
   }
 }
@@ -285,7 +286,7 @@ export async function getAllComments() {
       comments,
     };
   } catch (error) {
-    console.error("Failed to fetch all comments:", error);
+    logger.error("Failed to fetch all comments:", error);
     return {
       success: false,
       error: "Failed to load comments",
@@ -345,7 +346,7 @@ export async function deleteComment(commentId: string) {
       message: "Comment deleted successfully",
     };
   } catch (error) {
-    console.error("Failed to delete comment:", error);
+    logger.error("Failed to delete comment:", error);
     return {
       success: false,
       error: "Failed to delete comment",
@@ -385,7 +386,7 @@ export async function approveComment(commentId: string, approved: boolean) {
       message: approved ? "Comment approved" : "Comment rejected",
     };
   } catch (error) {
-    console.error("Failed to approve comment:", error);
+    logger.error("Failed to approve comment:", error);
     return {
       success: false,
       error: "Failed to update comment status",

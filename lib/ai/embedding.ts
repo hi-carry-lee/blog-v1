@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { encoding_for_model, Tiktoken } from "tiktoken";
 import { getOpenAIClient } from "./openai-client";
+import { logger } from "@/lib/logger";
 
 // 当前版本 (1.0.22)：encoder.decode() 返回 Uint8Array，需要用 TextDecoder 转换
 //   为什么会有这个变化：
@@ -58,13 +59,13 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     return response.data[0].embedding;
   } catch (error) {
     if (error instanceof OpenAI.APIError) {
-      console.error("OpenAI API error:", {
+      logger.error("OpenAI API error:", {
         status: error.status,
         message: error.message,
         code: error.code,
       });
     } else {
-      console.error("Unexpected embedding error:", error);
+      logger.error("Unexpected embedding error:", error);
     }
     throw error;
   }
@@ -103,7 +104,7 @@ export async function batchGenerateEmbeddings(
       .sort((a, b) => a.index - b.index)
       .map((item) => item.embedding);
   } catch (error) {
-    console.error("Batch embedding error:", error);
+    logger.error("Batch embedding error:", error);
     throw error;
   }
 }

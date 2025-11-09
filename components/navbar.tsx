@@ -9,7 +9,6 @@ import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 export function Navbar() {
   const { isDark, toggleTheme } = useAppTheme();
@@ -28,7 +27,7 @@ export function Navbar() {
       {/* Desktop and Mobile Header */}
       <div className="flex items-center justify-between px-4 md:px-8 lg:px-16 py-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 border-border border-2 rounded-full p-2 bg-primary/10">
+        <div className="flex items-center gap-2 rounded-full px-3 py-1 bg-primary/10">
           <Link href="/" className="font-semibold text-lg text-primary">
             AI Blog Platform
           </Link>

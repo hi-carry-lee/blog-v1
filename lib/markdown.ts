@@ -8,6 +8,7 @@ import "prismjs/components/prism-css";
 import "prismjs/components/prism-json";
 import "prismjs/components/prism-bash";
 import "prismjs/components/prism-python";
+import { logger } from "@/lib/logger";
 
 // 配置 marked 选项
 marked.setOptions({
@@ -87,7 +88,7 @@ renderer.code = function (token) {
     try {
       highlighted = Prism.highlight(code, Prism.languages[lang], lang);
     } catch (e) {
-      console.warn("Prism highlighting failed:", e);
+      logger.warn("Prism highlighting failed:", e);
       highlighted = code; // 如果失败，使用原始代码
     }
   }
@@ -196,7 +197,7 @@ export async function markdownToHtml(markdown: string): Promise<string> {
 
     return html as string;
   } catch (error) {
-    console.error("Error processing markdown:", error);
+    logger.error("Error processing markdown:", error);
     return "<p>Error processing markdown content</p>";
   }
 }

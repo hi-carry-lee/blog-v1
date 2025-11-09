@@ -1,4 +1,5 @@
 import { getOpenAIClient } from "./openai-client";
+import { logger } from "@/lib/logger";
 
 /**
  * 检测文本主要语言
@@ -23,12 +24,7 @@ export async function generateBlogContent(content: string): Promise<string> {
   }
 
   try {
-    console.log("Generating content with OpenAI...");
-
     const language = detectLanguage(content);
-    console.log(
-      `Detected language: ${language === "zh" ? "Chinese" : "English"}`
-    );
 
     const prompts = {
       zh: {
@@ -104,11 +100,10 @@ export async function generateBlogContent(content: string): Promise<string> {
       throw new Error("No content generated");
     }
 
-    console.log("✅ Success with OpenAI");
     return generatedText.trim();
   } catch (error) {
-    console.error(
-      "❌ OpenAI failed:",
+    logger.error(
+      "Content generation failed:",
       error instanceof Error ? error.message : "Unknown error"
     );
 

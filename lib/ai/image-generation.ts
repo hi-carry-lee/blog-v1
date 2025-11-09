@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { generatePrompt } from "./generate-image-prompt";
 import { getOpenAIClient } from "./openai-client";
+import { logger } from "@/lib/logger";
 
 // 配置 Cloudinary
 cloudinary.config({
@@ -69,9 +70,9 @@ export async function generateBlogCover(
             { format: "webp" }, // 使用 WebP 格式优化
           ],
         },
-        (error, result) => {
+        (error, result) =>         {
           if (error) {
-            console.error("Cloudinary upload error:", error);
+            logger.error("Cloudinary upload error:", error);
             reject(error);
           } else {
             resolve({
@@ -85,13 +86,12 @@ export async function generateBlogCover(
       uploadStream.end(imageBuffer);
     });
 
-    console.log("✅ Image generated and uploaded successfully");
     return uploadResult.secure_url;
   } catch (error) {
-    console.error("Image generation error:", error);
+    logger.error("Image generation error:", error);
 
     if (error instanceof OpenAI.APIError) {
-      console.error("OpenAI API error:", {
+      logger.error("OpenAI API error:", {
         status: error.status,
         message: error.message,
         code: error.code,

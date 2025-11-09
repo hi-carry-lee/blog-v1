@@ -38,8 +38,6 @@ export async function queryAllUsers(
   totalCount: number;
 }> {
   try {
-    logger.info("Querying users", { page, pageSize });
-
     // 1️⃣ 并行查询：用户列表 + 总数
     const [users, totalCount] = await Promise.all([
       // 查询当前页的用户，并计算每个用户的文章数
@@ -98,8 +96,6 @@ export async function queryAllUsers(
  */
 export async function queryUserById(userId: string) {
   try {
-    logger.info("Querying user by ID", { userId });
-
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -116,7 +112,6 @@ export async function queryUserById(userId: string) {
     });
 
     if (!user) {
-      logger.warn("User not found", { userId });
       return null;
     }
 
@@ -183,7 +178,7 @@ export async function registerUser(data: RegisterFormData) {
       user,
     };
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("Registration error:", error);
 
     if (error instanceof Error) {
       return {
@@ -243,7 +238,7 @@ export async function updateUserProfile(
       user,
     };
   } catch (error) {
-    console.error("Profile update error:", error);
+    logger.error("Profile update error:", error);
 
     if (error instanceof Error) {
       return {
@@ -282,7 +277,7 @@ export async function updateUserAvatar(imageUrl: string, userId: string) {
       user,
     };
   } catch (error) {
-    console.error("Avatar update error:", error);
+    logger.error("Avatar update error:", error);
 
     if (error instanceof Error) {
       return {

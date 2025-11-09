@@ -99,7 +99,6 @@ model Post {
   // 关联
   categoryId  String    @map("category_id")
   authorId    String    @map("author_id")
-  tagIds      String[]  @map("tag_ids")
   // 时间戳
   publishedAt DateTime? // 发布时间（可选）
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
@@ -108,10 +107,13 @@ model Post {
 
   // 关联关系
   // 如果分类下有博客，禁止删除分类，必须先删除或转移所有博客，才能删除分类
-  category Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  tags     Tag[]     @relation("PostTags")
-  author   User      @relation(fields: [authorId], references: [id])
-  Comment  Comment[]
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // @relation("PostTags")：Prisma 会自动在数据库中生成一个隐式中间表 _PostTags
+  // 包含两个字段：分别指向Post表和Tag表的id，用来建立 Post 和 Tag 的多对多关系
+  tags     Tag[]    @relation("PostTags")
+
+  author  User      @relation(fields: [authorId], references: [id])
+  Comment Comment[]
 
   // 关联 embedding
   embeddings PostEmbedding[]
