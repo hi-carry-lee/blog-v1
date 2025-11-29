@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
 
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
   title: "AI Blog Platform - Unlock the Power of AI for Your Content",
   description:
     "Revolutionize your content creation with AI-powered tools for intelligent search, cover generation, and content assistance.",
-  generator: "v0.app",
 };
 
 export default function RootLayout({
@@ -27,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <SessionProvider>
-          <Suspense fallback={null}>{children}</Suspense>
+          {children}
           <Toaster />
         </SessionProvider>
       </body>

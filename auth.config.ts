@@ -1,7 +1,7 @@
 // auth.config.ts - Edge Runtime兼容 (Auth.js v5)
 import type { NextAuthConfig } from "next-auth";
 
-export const authConfig = {
+export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/login",
     // error: "/auth/error", // 如需要可后续添加
@@ -50,4 +50,4 @@ export const authConfig = {
     },
   },
   providers: [], // 在主配置中定义
-} satisfies NextAuthConfig;
+};

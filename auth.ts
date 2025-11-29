@@ -154,7 +154,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
-        session.user.image = token.image as string | null;
+        session.user.image = token.image as string;
         // 安全地扩展 session.user 对象
         Object.assign(session.user, {
           role: token.role as string,
