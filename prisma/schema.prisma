@@ -1,16 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -25,8 +18,8 @@ model User {
   createdAt     DateTime  @default(now()) @db.Timestamp(6)
   updatedAt     DateTime  @updatedAt
   account       Account[]
-  Post          Post[]
-  Comment       Comment[]
+  posts         Post[]
+  comments      Comment[]
 
   @@map("users")
 }
@@ -112,8 +105,8 @@ model Post {
   // 包含两个字段：分别指向Post表和Tag表的id，用来建立 Post 和 Tag 的多对多关系
   tags     Tag[]    @relation("PostTags")
 
-  author  User      @relation(fields: [authorId], references: [id])
-  Comment Comment[]
+  author   User      @relation(fields: [authorId], references: [id])
+  comments Comment[]
 
   // 关联 embedding
   embeddings PostEmbedding[]

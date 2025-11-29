@@ -53,7 +53,7 @@ export async function queryAllUsers(
           image: true,
           createdAt: true,
           _count: {
-            select: { Post: true },
+            select: { posts: true },
           },
         },
       }),
@@ -62,7 +62,7 @@ export async function queryAllUsers(
       prisma.user.count(),
     ]);
 
-    // 2️⃣ 数据转换：将 _count.Post 转为 postCount
+    // 2️⃣ 数据转换：将 _count.posts 转为 postCount
     const transformedUsers: UserWithPosts[] = users.map((user) => ({
       id: user.id,
       name: user.name,
@@ -70,7 +70,7 @@ export async function queryAllUsers(
       role: user.role,
       image: user.image,
       createdAt: user.createdAt,
-      postCount: user._count.Post,
+      postCount: user._count.posts,
     }));
 
     // 3️⃣ 计算总页数
@@ -123,7 +123,7 @@ export async function queryUserById(userId: string) {
       role: user.role,
       image: user.image,
       createdAt: user.createdAt,
-      postCount: user._count.Post,
+      postCount: user._count.posts,
     };
 
     return transformedUser;

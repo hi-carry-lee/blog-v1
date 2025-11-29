@@ -157,6 +157,14 @@ export async function createPost(data: PostFormData) {
       };
     }
 
+    // 检查是否为管理员（只有管理员可以创建文章）
+    if (session.user.role !== "admin") {
+      return {
+        success: false,
+        error: "Only administrators can create posts",
+      };
+    }
+
     // 验证数据格式
     const validatedData = postSchema.parse(data);
 
@@ -238,7 +246,6 @@ export async function createPost(data: PostFormData) {
         postId: newPost.id,
         error: inngestError,
       });
-      // TODO: 发送邮件通知管理员
     }
 
     return {
@@ -526,11 +533,30 @@ export async function togglePublishPost(postId: string) {
 
 /**
  * 🔍 根据 ID 获取单个博客文章
+ * @param id - 文章 ID
+ * @param allowUnpublished - 是否允许查询未发布的文章（默认 false，只有管理员可以）
  */
-export async function getPostById(id: string) {
+export async function getPostById(
+  id: string,
+  allowUnpublished: boolean = false
+) {
   try {
+    // 如果需要查询未发布的文章，检查管理员权限
+    if (allowUnpublished) {
+      const session = await auth();
+      if (!session?.user?.id || session.user.role !== "admin") {
+        return {
+          success: false,
+          error: "Only administrators can view unpublished posts",
+        };
+      }
+    }
+
+    // 构建查询条件
+    const whereCondition = allowUnpublished ? { id } : { id, published: true };
+
     const post = await prisma.post.findUnique({
-      where: { id },
+      where: whereCondition,
       include: {
         category: {
           select: {
@@ -804,7 +830,7 @@ export async function getPublishedPostBySlug(slug: string) {
 }
 
 /**
- * 👁️ 增加文章浏览量
+ * 增加文章浏览量
  */
 export async function incrementPostViews(postId: string) {
   try {
@@ -999,6 +1025,22 @@ export async function searchPostsWithFilters(
       onlyPublished = true,
       minSimilarity,
     } = options;
+
+    // 如果查询未发布的文章，需要检查管理员权限
+    if (!onlyPublished) {
+      const session = await auth();
+      if (!session?.user?.id || session.user.role !== "admin") {
+        return {
+          success: false,
+          error: "Only administrators can search unpublished posts",
+          posts: [],
+          totalPages: 0,
+          currentPage: page,
+          totalCount: 0,
+          searchQuery,
+        };
+      }
+    }
 
     // 智能选择相似度阈值
     const smartThreshold = getSmartSimilarityThreshold(

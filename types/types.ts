@@ -33,3 +33,12 @@ export interface SearchPostResult {
   totalPages: number;
   searchQuery?: string;
 }
+
+// 扩展用户类型以包含自定义字段
+export interface ExtendedUser {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  role: string;
+}

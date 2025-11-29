@@ -9,7 +9,7 @@ type Props = {
 export default async function EditPostPage({ params }: Props) {
   const { id } = await params;
 
-  const result = await getPostById(id);
+  const result = await getPostById(id, true); // 允许查询未发布的文章（Dashboard 编辑页面）
 
   if (!result.success || !result.post) {
     notFound();
