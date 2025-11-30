@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:create": "npx tsx scripts/create-test-posts.ts",
     "test:report": "npx tsx scripts/generate-test-report.ts",
