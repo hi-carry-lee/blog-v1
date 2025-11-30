@@ -5,22 +5,19 @@ import { Button } from "@/components/ui/button";
 
 import SearchInput from "@/components/search-input";
 import Link from "next/link";
-import { useAppTheme } from "@/lib/hooks/useAppTheme";
+import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function Navbar() {
-  const { isDark, toggleTheme } = useAppTheme();
-  const [isMounted, setIsMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  if (!isMounted) {
-    return null;
-  }
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <nav className="bg-background border-b border-border">
@@ -67,7 +64,7 @@ export function Navbar() {
             onClick={toggleTheme}
             className="text-foreground hover:text-primary"
           >
-            {isDark ? (
+            {theme === "dark" ? (
               <Sun className="w-4 h-4" />
             ) : (
               <Moon className="w-4 h-4" />
@@ -112,7 +109,7 @@ export function Navbar() {
             onClick={toggleTheme}
             className="text-foreground hover:text-primary"
           >
-            {isDark ? (
+            {theme === "dark" ? (
               <Sun className="w-4 h-4" />
             ) : (
               <Moon className="w-4 h-4" />

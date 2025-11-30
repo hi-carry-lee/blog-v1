@@ -15,14 +15,11 @@ import {
 } from "@/components/ui/form";
 import { Triangle } from "lucide-react";
 import Link from "next/link";
-import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { registerSchema, type RegisterFormData } from "@/lib/zod-validations";
 import { registerUser } from "@/lib/actions/user";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 
 export default function RegisterPage() {
-  useAppTheme(); // Initialize theme
-
   const { success, error } = useSemanticToast();
 
   const form = useForm<RegisterFormData>({

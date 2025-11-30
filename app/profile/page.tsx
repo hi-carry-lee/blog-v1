@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Triangle, Camera } from "lucide-react";
 import Link from "next/link";
-import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import {
   profileUpdateSchema,
   type ProfileUpdateFormData,
@@ -27,7 +26,6 @@ import Image from "next/image";
 import { updateUserProfile, updateUserAvatar } from "@/lib/actions/user";
 
 export default function ProfilePage() {
-  useAppTheme(); // Initialize theme
   const { data: session, update } = useSession();
   const { success, error } = useSemanticToast();
   const [isUploading, setIsUploading] = useState(false);

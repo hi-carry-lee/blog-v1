@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Triangle } from "lucide-react";
 import Link from "next/link";
-import { useAppTheme } from "@/lib/hooks/useAppTheme";
 import { loginSchema, type LoginFormData } from "@/lib/zod-validations";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { signIn } from "next-auth/react";
@@ -23,7 +22,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 
 export default function LoginPage() {
-  useAppTheme(); // Initialize theme
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
