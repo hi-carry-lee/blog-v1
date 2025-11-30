@@ -35,6 +35,7 @@ export async function PostDetailContent({ post }: PostDetailContentProps) {
             src={post.coverImage}
             alt={post.title}
             fill
+            sizes="(max-width: 896px) 100vw, 896px"
             className="object-cover"
             priority
           />

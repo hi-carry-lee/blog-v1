@@ -17,6 +17,8 @@ export default function HomePage() {
           src="/hero-img.png"
           alt="AI-powered content creation hero image"
           fill
+          // 使用 fill 时，Next.js 需要 sizes 来确定在不同视口下加载的图片尺寸
+          sizes="100vw"
           className="object-cover -z-10"
           priority
         />
@@ -56,6 +58,7 @@ export default function HomePage() {
                     src="/search.png"
                     alt="Intelligent search interface"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -76,6 +79,7 @@ export default function HomePage() {
                     src="/cover.png"
                     alt="AI-generated cover example"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -96,6 +100,7 @@ export default function HomePage() {
                     src="/summary.png"
                     alt="Smart content summary interface"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -116,6 +121,7 @@ export default function HomePage() {
                     src="/content-assistant.png"
                     alt="Content creation assistant interface"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </div>

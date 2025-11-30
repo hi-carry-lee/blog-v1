@@ -8,12 +8,17 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -63,8 +68,11 @@ export function Navbar() {
             size="icon"
             onClick={toggleTheme}
             className="text-foreground hover:text-primary"
+            aria-label="Toggle theme"
           >
-            {theme === "dark" ? (
+            {!mounted ? (
+              <Moon className="w-4 h-4" />
+            ) : theme === "dark" ? (
               <Sun className="w-4 h-4" />
             ) : (
               <Moon className="w-4 h-4" />
@@ -108,8 +116,11 @@ export function Navbar() {
             size="icon"
             onClick={toggleTheme}
             className="text-foreground hover:text-primary"
+            aria-label="Toggle theme"
           >
-            {theme === "dark" ? (
+            {!mounted ? (
+              <Moon className="w-4 h-4" />
+            ) : theme === "dark" ? (
               <Sun className="w-4 h-4" />
             ) : (
               <Moon className="w-4 h-4" />
@@ -121,6 +132,7 @@ export function Navbar() {
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="text-foreground"
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? (
               <X className="w-5 h-5" />
