@@ -35,6 +35,7 @@ import Image from "next/image";
 import { uploadImageFile } from "@/lib/utils/upload";
 import { validateImageFile } from "@/lib/utils/file-validation";
 import { UPLOAD_FOLDERS } from "@/lib/config/file-upload";
+import { RequireAuth } from "@/components/auth/require-auth";
 
 // 创建一个匹配 Zod schema 输入类型的类型
 type PostFormInput = z.input<typeof postSchema>;
@@ -244,346 +245,352 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
   };
 
   return (
-    <div className="bg-background min-h-full">
-      <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCancel}
-            className="h-8 w-8"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Edit Post
-          </h1>
-        </div>
+    <RequireAuth>
+      <div className="bg-background min-h-full">
+        <div className="px-3 md:px-4 lg:px-6 py-3 md:py-4 lg:py-5 max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCancel}
+              className="h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Edit Post
+            </h1>
+          </div>
 
-        {/* Form */}
-        <div className="bg-card rounded-lg border border-border shadow-sm p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Title Field */}
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter post title"
-                        disabled={form.formState.isSubmitting}
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleTitleChange(e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Slug Field */}
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <div className="relative">
+          {/* Form */}
+          <div className="bg-card rounded-lg border border-border shadow-sm p-6">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                {/* Title Field */}
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
                         <Input
-                          placeholder="post-slug"
+                          placeholder="Enter post title"
                           disabled={form.formState.isSubmitting}
                           {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            handleSlugBlur();
+                          onChange={(e) => {
+                            field.onChange(e);
+                            handleTitleChange(e.target.value);
                           }}
                         />
-                        {isCheckingSlug && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      URL-friendly identifier (auto-generated from title).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Cover Image Field - 移动到更早的位置 */}
-              <FormField
-                control={form.control}
-                name="coverImage"
-                render={({}) => (
-                  <FormItem>
-                    <FormLabel>Cover Image</FormLabel>
-                    <FormControl>
-                      <div className="space-y-4">
-                        {/* Image Preview */}
-                        {previewImageUrl && (
-                          <div className="relative inline-block">
-                            <div className="relative w-64 h-40 overflow-hidden rounded-md border border-border bg-muted">
-                              <Image
-                                src={previewImageUrl}
-                                alt="Cover preview"
-                                fill
-                                className="object-cover"
-                                priority={false}
-                                sizes="(max-width: 768px) 100vw, 256px"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                              onClick={handleRemoveImage}
-                              disabled={
-                                form.formState.isSubmitting || isUploadingImage
-                              }
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Upload Button */}
-                        <div className="flex flex-col space-y-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleUploadClick}
-                            disabled={
-                              form.formState.isSubmitting || isUploadingImage
-                            }
-                            className="w-fit"
-                          >
-                            {isUploadingImage ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <Camera className="mr-2 h-4 w-4" />
-                                Upload Cover Image
-                              </>
-                            )}
-                          </Button>
-                        </div>
-
-                        {/* Hidden file input */}
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Brief Field */}
-              <FormField
-                control={form.control}
-                name="brief"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Brief / Excerpt</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Short description of the post"
-                        disabled={form.formState.isSubmitting}
-                        rows={3}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Content Field */}
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content (Markdown)</FormLabel>
-                    <FormControl>
-                      <MarkdownEditor
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Write your post content in Markdown..."
-                        disabled={form.formState.isSubmitting}
-                        minHeight={400}
-                        showStats={true}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Supports Markdown formatting, code blocks, and images. Use
-                      the toolbar to format text or upload images.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Category Field */}
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <select
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Tags Field */}
-              <FormField
-                control={form.control}
-                name="tagIds"
-                render={() => {
-                  const currentTagIds = form.watch("tagIds") || [];
-                  return (
+                {/* Slug Field */}
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
-                        {tags.map((tag) => {
-                          const isSelected = currentTagIds.includes(tag.id);
-                          return (
-                            <Badge
-                              key={tag.id}
-                              variant={isSelected ? "default" : "outline"}
-                              className="cursor-pointer transition-colors"
-                              onClick={() => handleTagToggle(tag.id)}
-                            >
-                              {tag.name}
-                              {isSelected && <X className="ml-1 h-3 w-3" />}
-                            </Badge>
-                          );
-                        })}
-                        {tags.length === 0 && (
-                          <span className="text-sm text-muted-foreground">
-                            No tags available
-                          </span>
-                        )}
-                      </div>
+                      <FormLabel>Slug</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="post-slug"
+                            disabled={form.formState.isSubmitting}
+                            {...field}
+                            onBlur={() => {
+                              field.onBlur();
+                              handleSlugBlur();
+                            }}
+                          />
+                          {isCheckingSlug && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
                       <FormDescription className="text-xs">
-                        Click tags to select/deselect
+                        URL-friendly identifier (auto-generated from title).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
-                  );
-                }}
-              />
+                  )}
+                />
 
-              {/* Published and Featured Checkboxes */}
-              <div className="flex gap-6">
+                {/* Cover Image Field - 移动到更早的位置 */}
                 <FormField
                   control={form.control}
-                  name="published"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
+                  name="coverImage"
+                  render={({}) => (
+                    <FormItem>
+                      <FormLabel>Cover Image</FormLabel>
                       <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
-                          disabled={form.formState.isSubmitting}
-                          className="rounded"
-                        />
+                        <div className="space-y-4">
+                          {/* Image Preview */}
+                          {previewImageUrl && (
+                            <div className="relative inline-block">
+                              <div className="relative w-64 h-40 overflow-hidden rounded-md border border-border bg-muted">
+                                <Image
+                                  src={previewImageUrl}
+                                  alt="Cover preview"
+                                  fill
+                                  className="object-cover"
+                                  priority={false}
+                                  sizes="(max-width: 768px) 100vw, 256px"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                                onClick={handleRemoveImage}
+                                disabled={
+                                  form.formState.isSubmitting ||
+                                  isUploadingImage
+                                }
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Upload Button */}
+                          <div className="flex flex-col space-y-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleUploadClick}
+                              disabled={
+                                form.formState.isSubmitting || isUploadingImage
+                              }
+                              className="w-fit"
+                            >
+                              {isUploadingImage ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="mr-2 h-4 w-4" />
+                                  Upload Cover Image
+                                </>
+                              )}
+                            </Button>
+                          </div>
+
+                          {/* Hidden file input */}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </div>
                       </FormControl>
-                      <FormLabel className="!mt-0 cursor-pointer">
-                        Published
-                      </FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                {/* Brief Field */}
                 <FormField
                   control={form.control}
-                  name="featured"
+                  name="brief"
                   render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormItem>
+                      <FormLabel>Brief / Excerpt</FormLabel>
                       <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
+                        <Textarea
+                          placeholder="Short description of the post"
                           disabled={form.formState.isSubmitting}
-                          className="rounded"
+                          rows={3}
+                          {...field}
                         />
                       </FormControl>
-                      <FormLabel className="!mt-0 cursor-pointer">
-                        Featured
-                      </FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              {/* Form Actions */}
-              <div className="flex gap-4 pt-6 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={form.formState.isSubmitting}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={form.formState.isSubmitting}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Post"
+                {/* Content Field */}
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Content (Markdown)</FormLabel>
+                      <FormControl>
+                        <MarkdownEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Write your post content in Markdown..."
+                          disabled={form.formState.isSubmitting}
+                          minHeight={400}
+                          showStats={true}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Supports Markdown formatting, code blocks, and images.
+                        Use the toolbar to format text or upload images.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                />
+
+                {/* Category Field */}
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Select a category</option>
+                          {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Tags Field */}
+                <FormField
+                  control={form.control}
+                  name="tagIds"
+                  render={() => {
+                    const currentTagIds = form.watch("tagIds") || [];
+                    return (
+                      <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                          {tags.map((tag) => {
+                            const isSelected = currentTagIds.includes(tag.id);
+                            return (
+                              <Badge
+                                key={tag.id}
+                                variant={isSelected ? "default" : "outline"}
+                                className="cursor-pointer transition-colors"
+                                onClick={() => handleTagToggle(tag.id)}
+                              >
+                                {tag.name}
+                                {isSelected && <X className="ml-1 h-3 w-3" />}
+                              </Badge>
+                            );
+                          })}
+                          {tags.length === 0 && (
+                            <span className="text-sm text-muted-foreground">
+                              No tags available
+                            </span>
+                          )}
+                        </div>
+                        <FormDescription className="text-xs">
+                          Click tags to select/deselect
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                {/* Published and Featured Checkboxes */}
+                <div className="flex gap-6">
+                  <FormField
+                    control={form.control}
+                    name="published"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            disabled={form.formState.isSubmitting}
+                            className="rounded"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0 cursor-pointer">
+                          Published
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            disabled={form.formState.isSubmitting}
+                            className="rounded"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0 cursor-pointer">
+                          Featured
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex gap-4 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={form.formState.isSubmitting}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Post"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
         </div>
       </div>
-    </div>
+    </RequireAuth>
   );
 }
