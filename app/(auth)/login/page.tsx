@@ -16,17 +16,21 @@ import {
 import { Triangle } from "lucide-react";
 import Link from "next/link";
 import { loginSchema, type LoginFormData } from "@/lib/zod-validations";
-import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FaGoogle, FaGithub } from "react-icons/fa";
+import { useCredentialsLogin } from "@/lib/hooks/useCredentialsLogin";
+import { useOAuth } from "@/lib/hooks/useOAuth";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const { handleCredentialsLogin } = useCredentialsLogin({
+    callbackUrl,
+  });
 
-  const { success, error } = useSemanticToast();
+  const { handleOAuthLogin } = useOAuth({
+    callbackUrl,
+  });
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -37,94 +41,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        error(
-          "Login failed",
-          "Please check your email and password and try again."
-        );
-      } else if (result?.ok) {
-        success(
-          "Login successful!",
-          "Welcome back! Redirecting to dashboard..."
-        );
-        // 使用 replace 进行跳转，可以避免用户返回登录页
-        router.replace(callbackUrl);
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      error("An unexpected error occurred", "Please try again later.");
-    }
-  };
-
-  const handleGitHubLogin = async () => {
-    try {
-      const result = await signIn("github", {
-        callbackUrl: "/",
-        redirect: false,
-      });
-
-      if (result?.error) {
-        if (result.error === "OAuthAccountNotLinked") {
-          error(
-            "Account linking failed",
-            "Unable to link your GitHub account. Please contact support if this issue persists."
-          );
-        } else {
-          error("GitHub login failed", "Please try again later.");
-        }
-      } else if (result?.ok || result?.url) {
-        success(
-          "GitHub login successful!",
-          "Your GitHub account has been linked successfully."
-        );
-        // 延迟跳转，让用户看到成功消息
-        setTimeout(() => {
-          router.replace(result?.url || callbackUrl);
-        }, 1000);
-      }
-    } catch (err) {
-      console.error("GitHub login error:", err);
-      error("GitHub login failed", "Please try again later.");
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await signIn("google", {
-        callbackUrl: "/",
-        redirect: false,
-      });
-
-      if (result?.error) {
-        if (result.error === "OAuthAccountNotLinked") {
-          error(
-            "Account linking failed",
-            "Unable to link your Google account. Please contact support if this issue persists."
-          );
-        } else {
-          error("Google login failed", "Please try again later.");
-        }
-      } else if (result?.ok || result?.url) {
-        success(
-          "Google login successful!",
-          "Welcome! You have been logged in successfully."
-        );
-        // 延迟跳转，让用户看到成功消息
-        setTimeout(() => {
-          router.replace(result?.url || callbackUrl);
-        }, 1000);
-      }
-    } catch (err) {
-      console.error("Google login error:", err);
-      error("Google login failed", "Please try again later.");
-    }
+    await handleCredentialsLogin(data);
   };
 
   const handleForgotPassword = () => {
@@ -240,7 +157,7 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleGitHubLogin}
+              onClick={() => handleOAuthLogin("github")}
               disabled={form.formState.isSubmitting}
               className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3 disabled:opacity-50"
             >
@@ -251,7 +168,7 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleGoogleLogin}
+              onClick={() => handleOAuthLogin("google")}
               disabled={form.formState.isSubmitting}
               className="w-full border-border bg-card hover:bg-accent text-card-foreground font-medium py-3 disabled:opacity-50"
             >

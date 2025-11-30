@@ -7,6 +7,7 @@ import Link from "next/link";
 import { User, LogOut } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/lib/utils";
 
 // 用户头像组件
 function UserAvatarComponent({
@@ -56,16 +57,6 @@ function UserAvatarComponent({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
-
-  // 生成字母头像
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   // 判断是否显示管理员菜单
   const showAdminMenu =

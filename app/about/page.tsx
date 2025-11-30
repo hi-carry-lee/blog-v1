@@ -4,70 +4,42 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import {
-  Github,
-  Twitter,
-  Briefcase,
-  FileText,
-  ExternalLink,
-} from "lucide-react";
+import { Github, Twitter, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { getAdminUser } from "@/lib/actions/user";
+import { getInitials } from "@/lib/utils";
+import {
+  skills,
+  quickLinks,
+  socialLinks,
+  profileConfig,
+  aboutContent,
+} from "@/lib/config/about";
 
 export default async function AboutPage() {
   const adminUser = await getAdminUser();
 
-  // 生成字母头像
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // 技能标签
-  const skills = [
-    "Full-Stack Development",
-    "Java",
-    "Node.js",
-    "JavaScript",
-    "React",
-    "Next.js",
-    "Express.js",
-    "Socket.IO",
-    "Redis",
-    "MySQL",
-    "PostgreSQL",
-    "Oracle",
-    "Kafka",
-    "English (Working Proficiency)",
-    "Remote Collaboration",
-  ];
-
-  // 快速链接配置
-  const quickLinks = [
-    {
-      title: "Portfolio",
-      description: "View my work & projects",
-      icon: Briefcase,
-      href: "/portfolio",
-    },
-    {
-      title: "Blog Posts",
-      description: "Read my technical articles",
-      icon: FileText,
-      href: "/posts",
-    },
-    {
-      title: "GitHub",
-      description: "Check out my code",
-      icon: Github,
-      href: "https://github.com/kaili-lab",
-      external: true,
-    },
-  ];
+  // 空状态处理
+  if (!adminUser) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <div className="max-w-6xl mx-auto">
+            <Card className="p-8 text-center">
+              <h1 className="text-2xl font-bold text-foreground mb-4">
+                Admin User Not Found
+              </h1>
+              <p className="text-muted-foreground">
+                The admin user information is not available at this time.
+              </p>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -81,7 +53,7 @@ export default async function AboutPage() {
                 <Card className="p-6">
                   {/* 头像 */}
                   <div className="flex justify-center mb-4">
-                    {adminUser?.image ? (
+                    {adminUser.image ? (
                       <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-primary/20">
                         <Image
                           src={adminUser.image}
@@ -95,7 +67,7 @@ export default async function AboutPage() {
                       <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
                         <span className="text-4xl font-bold text-primary">
                           {getInitials(
-                            adminUser?.name || adminUser?.email || "Admin"
+                            adminUser.name || adminUser.email || "Admin"
                           )}
                         </span>
                       </div>
@@ -105,30 +77,33 @@ export default async function AboutPage() {
                   {/* 个人信息 */}
                   <div className="text-center space-y-2 mb-6">
                     <h1 className="text-2xl font-bold text-foreground">
-                      {adminUser?.name || "Admin"}
+                      {adminUser.name || "Admin"}
                     </h1>
                     <p className="text-primary font-medium">
-                      Full-Stack Developer
+                      {profileConfig.title}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Build scalable products with React/Next.js and
-                      Java/Node.js
+                      {profileConfig.description}
                     </p>
                   </div>
 
                   {/* 社交媒体链接 */}
                   <div className="flex justify-center gap-4 mb-6">
                     <Link
-                      href="https://github.com/kaili-lab"
+                      href={socialLinks.github.url}
                       className="text-muted-foreground hover:text-primary transition-colors"
-                      aria-label="GitHub"
+                      aria-label={socialLinks.github.label}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <Github className="w-5 h-5" />
                     </Link>
                     <Link
-                      href="https://x.com/kaili_dev"
+                      href={socialLinks.twitter.url}
                       className="text-muted-foreground hover:text-primary transition-colors"
-                      aria-label="Twitter"
+                      aria-label={socialLinks.twitter.label}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <Twitter className="w-5 h-5" />
                     </Link>
@@ -136,7 +111,13 @@ export default async function AboutPage() {
 
                   {/* CTA Button */}
                   <Button asChild className="w-full">
-                    <Link href="https://kaili.dev">View Full Portfolio</Link>
+                    <Link
+                      href={profileConfig.portfolioUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {profileConfig.portfolioLabel}
+                    </Link>
                   </Button>
                 </Card>
               </div>
@@ -148,15 +129,9 @@ export default async function AboutPage() {
               <Card className="p-8">
                 <h2 className="text-2xl font-bold text-foreground">About Me</h2>
                 <div className="text-muted-foreground space-y-4">
-                  <p>
-                    Full-stack engineer with 5 years of experience:
-                    Frontend—React ecosystem, Next.js; Backend—Java, Node.js.
-                    Hands-on with Redis, MySQL/PostgreSQL/Oracle, Kafka,
-                    Socket.IO.
-                  </p>
+                  <p>{aboutContent.paragraph1}</p>
                   <p className="text-foreground font-medium">
-                    Performance-minded, maintainable code, remote-ready and open
-                    to roles.
+                    {aboutContent.paragraph2}
                   </p>
                 </div>
               </Card>

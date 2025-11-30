@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Github, Twitter } from "lucide-react";
+import { socialLinks } from "@/lib/config/about";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -28,18 +29,20 @@ export function Footer() {
 
           <div className="flex items-center gap-4">
             <Link
-              href="https://github.com/kaili-lab"
+              href={socialLinks.github.url}
               className="text-muted-foreground hover:text-primary transition-colors"
-              aria-label="GitHub"
+              aria-label={socialLinks.github.label}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <Github className="w-5 h-5" />
             </Link>
             <Link
-              href="https://x.com/kaili_dev"
+              href={socialLinks.twitter.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Follow us on Twitter"
+              aria-label={socialLinks.twitter.label}
             >
               <Twitter className="w-5 h-5" />
             </Link>

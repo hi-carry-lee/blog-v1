@@ -24,6 +24,7 @@ import { useSession } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { updateUserProfile, updateUserAvatar } from "@/lib/actions/user";
+import { getInitials } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -203,16 +204,6 @@ export default function ProfilePage() {
 
   const handleCameraClick = () => {
     fileInputRef.current?.click();
-  };
-
-  // Generate initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   if (!session) {
