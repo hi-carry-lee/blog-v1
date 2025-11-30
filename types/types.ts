@@ -42,3 +42,8 @@ export interface ExtendedUser {
   image?: string | null;
   role: string;
 }
+
+// 图片上传响应类型
+export type UploadResponse =
+  | { success: true; url: string; public_id: string }
+  | { success: false; error: string; url?: string; public_id?: string };

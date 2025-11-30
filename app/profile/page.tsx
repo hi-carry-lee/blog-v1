@@ -13,8 +13,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Triangle, Camera } from "lucide-react";
+import { Camera } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   profileUpdateSchema,
   type ProfileUpdateFormData,
@@ -23,14 +24,15 @@ import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { updateUserProfile, updateUserAvatar } from "@/lib/actions/user";
+import { updateUserProfile } from "@/lib/actions/user";
 import { getInitials } from "@/lib/utils";
+import { logger } from "@/lib/logger";
+import { uploadAndUpdateAvatar } from "@/lib/utils/avatar-upload";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
   const { success, error } = useSemanticToast();
   const [isUploading, setIsUploading] = useState(false);
-  const [imageKey, setImageKey] = useState(0); // 用于强制重新渲染图片
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null); // 本地图片状态
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,126 +81,58 @@ export default function ProfilePage() {
         error("Update failed", result.error || "Please try again later.");
       }
     } catch (err) {
-      console.error("Profile update error:", err);
+      logger.error("Profile update error:", err);
       error("An unexpected error occurred", "Please try again later.");
     }
   };
 
-  // 隐藏的，用来存储图片url的Input元素，它的值变化时会出发这个事件
+  // 处理头像上传
   const handleAvatarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      error("Invalid file type", "Please select a JPEG, PNG, or WebP image.");
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      error("File too large", "Please select an image smaller than 5MB.");
+    if (!session?.user?.id) {
+      error("Authentication required", "Please log in to update your avatar.");
       return;
     }
 
     setIsUploading(true);
 
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "avatars");
+      // 调用业务逻辑函数处理上传和更新
+      const result = await uploadAndUpdateAvatar(file, session.user.id);
 
-      // Upload to Cloudinary
-      const uploadResponse = await uploadImage(formData);
-
-      // 上传Cloudinary成功后，更新user表中的图片url
-      if (uploadResponse.success && session?.user?.id) {
-        // 上传成功后，更新user表中的图片url
-        const result = await updateUserAvatar(
-          uploadResponse.url,
-          session.user.id
+      if (result.success && result.user) {
+        success(
+          "Avatar updated successfully!",
+          "Your profile picture has been updated."
         );
 
-        if (result.success && result.user) {
-          success(
-            "Avatar updated successfully!",
-            "Your profile picture has been updated."
-          );
+        // 更新本地图片状态
+        setCurrentImageUrl(result.user.image);
 
-          // 更新本地图片状态
-          setCurrentImageUrl(result.user.image);
-          // 强制重新渲染图片组件
-          setImageKey((prev) => prev + 1);
-
-          // 更新 session，这会触发 jwt callback 的 trigger === "update"
-          await update({
-            user: {
-              ...session?.user,
-              image: result.user.image,
-            },
-          });
-        } else {
-          error(
-            "Avatar update failed",
-            result.error || "Please try again later."
-          );
-        }
+        // 更新 session，这会触发 jwt callback 的 trigger === "update"
+        await update({
+          user: {
+            ...session?.user,
+            image: result.user.image,
+          },
+        });
       } else {
-        error(
-          "Upload failed",
-          uploadResponse.error || "Failed to upload image. Please try again."
-        );
+        const errorMessage =
+          result.success === false ? result.error : "Please try again later.";
+        error("Upload failed", errorMessage);
       }
     } catch (err) {
-      console.error("Avatar upload error:", err);
+      logger.error("Avatar upload error:", err);
       error("Upload failed", "An unexpected error occurred. Please try again.");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    }
-  };
-
-  const uploadImage = async (
-    formData: FormData
-  ): Promise<{
-    success: boolean;
-    url: string;
-    public_id: string;
-    error?: string;
-  }> => {
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Upload failed");
-      }
-
-      const data = await response.json();
-      const res = {
-        success: true,
-        url: data.url,
-        public_id: data.public_id,
-      };
-      return res;
-    } catch (error) {
-      console.error("Upload error:", error);
-      return {
-        success: false,
-        url: "",
-        public_id: "",
-        error: error instanceof Error ? error.message : "Upload failed",
-      };
     }
   };
 
@@ -230,15 +164,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Logo/Brand */}
-      <div className="absolute top-6 left-6">
-        <Link href="/" className="flex items-center gap-2">
-          <Triangle className="w-6 h-6 text-primary fill-primary" />
-          <span className="font-semibold text-lg text-foreground">
-            AI Blog Platform
-          </span>
-        </Link>
-      </div>
+      <BrandLogo />
 
       {/* Profile Update Form */}
       <Card className="w-full max-w-md bg-card shadow-xl border-border">
@@ -256,23 +182,15 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center mb-8">
             <div className="relative">
               {currentImageUrl ? (
-                <>
-                  {console.log(
-                    "Rendering image with URL:",
-                    currentImageUrl,
-                    "key:",
-                    imageKey
-                  )}
-                  <Image
-                    key={imageKey} // 添加 key 强制重新渲染
-                    src={currentImageUrl}
-                    alt={session.user?.name || "User"}
-                    width={120}
-                    height={120}
-                    className="rounded-full object-cover border-4 border-primary/20"
-                    priority
-                  />
-                </>
+                <Image
+                  key={currentImageUrl} // 使用 URL 作为 key，URL 变化时会自动更新
+                  src={currentImageUrl}
+                  alt={session.user?.name || "User"}
+                  width={120}
+                  height={120}
+                  className="rounded-full object-cover border-4 border-primary/20"
+                  priority
+                />
               ) : (
                 <div className="w-30 h-30 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-2xl border-4 border-primary/20">
                   {getInitials(

@@ -25,7 +25,10 @@ export function useCredentialsLogin(options: UseCredentialsLoginOptions = {}) {
   const { success, error } = useSemanticToast();
   const { callbackUrl, defaultCallbackUrl = "/" } = options;
 
-  // TODO:可以不使用 useCallback
+  // 可以不使用 useCallback，使用 useCallback 的场景：
+  //  1. 函数作为 props 传递给用 React.memo 包装的子组件，避免因函数引用变化导致子组件不必要的重渲染
+  //  2. 函数作为其他 hooks 的依赖项，如 useEffect, useMemo, useCallback 的依赖数组
+  //  3. 函数创建成本很高（罕见）
   const handleCredentialsLogin = useCallback(
     async (data: LoginFormData) => {
       try {

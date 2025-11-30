@@ -13,8 +13,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Triangle } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 import { registerSchema, type RegisterFormData } from "@/lib/zod-validations";
 import { registerUser } from "@/lib/actions/user";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
@@ -57,15 +57,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Logo/Brand */}
-      <div className="absolute top-6 left-6">
-        <Link href="/" className="flex items-center gap-2">
-          <Triangle className="w-6 h-6 text-primary fill-primary" />
-          <span className="font-semibold text-lg text-foreground">
-            AI Blog Platform
-          </span>
-        </Link>
-      </div>
+      <BrandLogo />
 
       {/* Registration Form */}
       <Card className="w-full max-w-md bg-card shadow-xl border-border">

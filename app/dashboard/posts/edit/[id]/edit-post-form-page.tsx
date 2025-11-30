@@ -32,8 +32,9 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { PostWithRelations } from "@/lib/actions/post";
 import Image from "next/image";
-
-// Updated PostWithRelations type now includes content, metaTitle, and metaDescription
+import { uploadImageFile } from "@/lib/utils/upload";
+import { validateImageFile } from "@/lib/utils/file-validation";
+import { UPLOAD_FOLDERS } from "@/lib/config/file-upload";
 
 // 创建一个匹配 Zod schema 输入类型的类型
 type PostFormInput = z.input<typeof postSchema>;
@@ -192,30 +193,21 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      error("Invalid file type", "Please select a JPEG, PNG, or WebP image.");
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      error("File too large", "Please select an image smaller than 5MB.");
+    // 验证文件
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      error(validation.error, validation.detail);
       return;
     }
 
     setIsUploadingImage(true);
 
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "cover-images");
-
-      // Upload to Cloudinary
-      const uploadResponse = await uploadImage(formData);
+      // 上传文件到 Cloudinary
+      const uploadResponse = await uploadImageFile(
+        file,
+        UPLOAD_FOLDERS.COVER_IMAGES
+      );
 
       if (uploadResponse.success) {
         // Update form field and preview
@@ -232,49 +224,13 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
         );
       }
     } catch (err) {
-      console.error("Image upload error:", err);
+      logger.error("Image upload error:", err);
       error("Upload failed", "An unexpected error occurred. Please try again.");
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    }
-  };
-
-  const uploadImage = async (
-    formData: FormData
-  ): Promise<{
-    success: boolean;
-    url: string;
-    public_id: string;
-    error?: string;
-  }> => {
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Upload failed");
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        url: data.url,
-        public_id: data.public_id,
-      };
-    } catch (error) {
-      console.error("Upload error:", error);
-      return {
-        success: false,
-        url: "",
-        public_id: "",
-        error: error instanceof Error ? error.message : "Upload failed",
-      };
     }
   };
 
