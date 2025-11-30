@@ -42,9 +42,10 @@ export type PostWithRelations = {
 /**
  * 🔍 验证 Slug 是否唯一
  */
-export async function validatePostSlug(slug: string, excludeId?: string) {
+export async function validatePostSlug(slug: string | null | undefined, excludeId?: string) {
   try {
-    if (!slug.trim()) {
+    // 输入验证（与 category.ts 保持一致）
+    if (!slug || typeof slug !== "string" || slug.trim().length === 0) {
       return { success: false, error: "Slug cannot be empty" };
     }
 

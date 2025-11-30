@@ -91,9 +91,10 @@ async function validateTagUniqueness(
  *
  * 使用场景：TagForm 组件中，用户输入 slug 后失焦时调用
  */
-export async function slugUniqueValidate(slug: string) {
+export async function slugUniqueValidate(slug: string | null | undefined) {
   try {
-    if (!slug.trim()) {
+    // 输入验证（与 category.ts 保持一致）
+    if (!slug || typeof slug !== "string" || slug.trim().length === 0) {
       return { success: false, error: "Slug cannot be empty" };
     }
 

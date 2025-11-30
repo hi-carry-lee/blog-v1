@@ -81,7 +81,7 @@ async function validateCategoryUniqueness(
   return { valid: true };
 }
 
-export async function slugUniqueValidate(data: string) {
+export async function slugUniqueValidate(data: string | null | undefined) {
   // 输入验证
   if (!data || typeof data !== "string" || data.trim().length === 0) {
     return {
