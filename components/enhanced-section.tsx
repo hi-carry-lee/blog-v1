@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  SiNextdotjs,
+  SiPrisma,
+  SiOpenai,
+  SiTailwindcss,
+  SiShadcnui,
+} from "react-icons/si";
+import { Database, Workflow, FileText } from "lucide-react";
 
 export default function EnhancedSections() {
   const [viewMode, setViewMode] = useState("before"); // "before" or "after"
@@ -280,7 +288,7 @@ export default function EnhancedSections() {
       </section>
 
       {/* Tech Stack Section */}
-      <section className="py-20 bg-gradient-to-br from-muted/30 to-accent/10">
+      <section className="py-20 bg-gradient-to-br from-primary/10 via-accent/20 to-primary/5">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4 text-foreground">
             Built with Modern Technologies
@@ -290,56 +298,75 @@ export default function EnhancedSections() {
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Next.js</p>
-                <p className="text-xs text-muted-foreground mt-1">Framework</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Prisma</p>
-                <p className="text-xs text-muted-foreground mt-1">ORM</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Neon</p>
-                <p className="text-xs text-muted-foreground mt-1">Database</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">OpenAI</p>
-                <p className="text-xs text-muted-foreground mt-1">AI Engine</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Tailwind CSS</p>
-                <p className="text-xs text-muted-foreground mt-1">Styling</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Shadcn UI</p>
-                <p className="text-xs text-muted-foreground mt-1">Components</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">Inngest</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Background Jobs
-                </p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
-                <p className="font-bold text-foreground">marked.js</p>
-                <p className="text-xs text-muted-foreground mt-1">Markdown</p>
-              </div>
-            </div>
+            {[
+              {
+                name: "Next.js",
+                icon: SiNextdotjs,
+                category: "Framework",
+                color: "text-foreground",
+              },
+              {
+                name: "Prisma",
+                icon: SiPrisma,
+                category: "ORM",
+                color: "text-[#2D3748] dark:text-[#81B0FF]",
+              },
+              {
+                name: "Neon",
+                icon: Database,
+                category: "Database",
+                color: "text-[#00E5B0]",
+              },
+              {
+                name: "OpenAI",
+                icon: SiOpenai,
+                category: "AI Engine",
+                color: "text-[#412991] dark:text-[#8B9DC3]",
+              },
+              {
+                name: "Tailwind CSS",
+                icon: SiTailwindcss,
+                category: "Styling",
+                color: "text-[#06B6D4]",
+              },
+              {
+                name: "Shadcn UI",
+                icon: SiShadcnui,
+                category: "Components",
+                color: "text-foreground",
+              },
+              {
+                name: "Inngest",
+                icon: Workflow,
+                category: "Background Jobs",
+                color: "text-[#6366F1]",
+              },
+              {
+                name: "marked.js",
+                icon: FileText,
+                category: "Markdown",
+                color: "text-foreground",
+              },
+            ].map((tech, index) => {
+              const Icon = tech.icon;
+              return (
+                <div key={index} className="text-center">
+                  <div className="bg-card border border-border rounded-lg p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center gap-4 h-full">
+                    <div className="flex items-center justify-center">
+                      <Icon
+                        className={`w-12 h-12 ${tech.color} transition-transform duration-300 hover:scale-110`}
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">{tech.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {tech.category}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

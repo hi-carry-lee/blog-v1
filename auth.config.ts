@@ -27,7 +27,7 @@ export const authConfig: NextAuthConfig = {
         return true;
       }
 
-      // 其他API路由保护策略
+      // API目录下的路由，都需要认证才能访问
       if (pathname.startsWith("/api/")) {
         // 需要登录才能访问其他API
         return isLoggedIn;

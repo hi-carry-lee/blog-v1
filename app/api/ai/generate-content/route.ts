@@ -22,15 +22,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("AI content generation error:", error);
 
-    // Return the specific error message from the service
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
     return NextResponse.json(
       {
         success: false,
-        error: errorMessage,
-        details: errorMessage,
+        error: "AI content generation failed, please try again!",
+        details: "Unknown error, please try again later.",
       },
       { status: 500 }
     );
