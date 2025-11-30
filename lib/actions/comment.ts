@@ -230,25 +230,6 @@ export async function createComment(
 }
 
 /**
- * 获取评论总数
- */
-export async function getPostCommentsCount(postId: string) {
-  try {
-    const count = await prisma.comment.count({
-      where: {
-        postId,
-        approved: true,
-      },
-    });
-
-    return { success: true, count };
-  } catch (error) {
-    logger.error("Failed to fetch comments count:", error);
-    return { success: false, count: 0 };
-  }
-}
-
-/**
  * 获取所有评论（管理员用）
  */
 export async function getAllComments() {

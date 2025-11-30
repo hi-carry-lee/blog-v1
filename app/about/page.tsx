@@ -1,6 +1,3 @@
-"use client";
-
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +12,10 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { getAdminUser } from "@/lib/actions/user";
 
-export default function AboutPage() {
-  const { data: session } = useSession();
+export default async function AboutPage() {
+  const adminUser = await getAdminUser();
 
   // 生成字母头像
   const getInitials = (name: string) => {
@@ -83,11 +81,11 @@ export default function AboutPage() {
                 <Card className="p-6">
                   {/* 头像 */}
                   <div className="flex justify-center mb-4">
-                    {session?.user?.image ? (
+                    {adminUser?.image ? (
                       <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-primary/20">
                         <Image
-                          src={session.user.image}
-                          alt={session.user.name || "User"}
+                          src={adminUser.image}
+                          alt={adminUser.name || "Admin"}
                           width={128}
                           height={128}
                           className="w-full h-full object-cover"
@@ -97,9 +95,7 @@ export default function AboutPage() {
                       <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
                         <span className="text-4xl font-bold text-primary">
                           {getInitials(
-                            session?.user?.name ||
-                              session?.user?.email ||
-                              "Admin"
+                            adminUser?.name || adminUser?.email || "Admin"
                           )}
                         </span>
                       </div>
@@ -109,7 +105,7 @@ export default function AboutPage() {
                   {/* 个人信息 */}
                   <div className="text-center space-y-2 mb-6">
                     <h1 className="text-2xl font-bold text-foreground">
-                      {session?.user?.name || "Admin"}
+                      {adminUser?.name || "Admin"}
                     </h1>
                     <p className="text-primary font-medium">
                       Full-Stack Developer

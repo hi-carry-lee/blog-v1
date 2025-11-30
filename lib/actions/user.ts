@@ -53,7 +53,7 @@ export async function queryAllUsers(
           image: true,
           createdAt: true,
           _count: {
-            select: { posts: true },
+            select: { Post: true },
           },
         },
       }),
@@ -70,7 +70,7 @@ export async function queryAllUsers(
       role: user.role,
       image: user.image,
       createdAt: user.createdAt,
-      postCount: user._count.posts,
+      postCount: user._count.Post,
     }));
 
     // 3️⃣ 计算总页数
@@ -89,15 +89,14 @@ export async function queryAllUsers(
 }
 
 /**
- * 🔍 根据 ID 查询单个用户
+ * 🔍 获取 admin 用户信息
  *
- * @param userId - 用户 ID
- * @returns 用户对象或 null
+ * @returns admin 用户对象或 null
  */
-export async function queryUserById(userId: string) {
+export async function getAdminUser() {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const adminUser = await prisma.user.findFirst({
+      where: { role: "admin" },
       select: {
         id: true,
         name: true,
@@ -105,30 +104,17 @@ export async function queryUserById(userId: string) {
         role: true,
         image: true,
         createdAt: true,
-        _count: {
-          select: { Post: true },
-        },
       },
     });
 
-    if (!user) {
+    if (!adminUser) {
+      logger.warn("Admin user not found");
       return null;
     }
 
-    // 转换为统一格式
-    const transformedUser: UserWithPosts = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      image: user.image,
-      createdAt: user.createdAt,
-      postCount: user._count.posts,
-    };
-
-    return transformedUser;
+    return adminUser;
   } catch (error) {
-    logger.error("Query user by ID failed", error);
+    logger.error("Get admin user failed", error);
     return null;
   }
 }

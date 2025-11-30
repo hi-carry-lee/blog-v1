@@ -82,17 +82,6 @@ export async function generatePostEmbeddings(post: Post) {
 }
 
 /**
- * 更新文章的 embeddings
- */
-export async function updatePostEmbeddings(post: Post) {
-  // 1. 删除旧数据
-  await deleteEmbeddingsByPostId(post.id);
-
-  // 2. 重新生成
-  await generatePostEmbeddings(post);
-}
-
-/**
  * 搜索文章（去重 + 排序）
  */
 export async function searchPosts(
