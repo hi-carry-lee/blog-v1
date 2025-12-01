@@ -8,7 +8,7 @@ export const ALLOWED_IMAGE_TYPES = [
   "image/jpg",
   "image/png",
   "image/webp",
-] as const;
+] as const; // as const用来定义字面量类型，防止被修改
 
 // 允许的图片文件类型（类型定义）
 export type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
@@ -23,7 +23,7 @@ export const MAX_FILE_SIZE_MB = 5;
 export const UPLOAD_FOLDERS = {
   AVATARS: "avatars",
   COVER_IMAGES: "cover-images",
-} as const;
+} as const; // as const用来定义字面量类型，防止被修改
 
 // 错误消息
 export const FILE_VALIDATION_ERRORS = {
@@ -32,4 +32,4 @@ export const FILE_VALIDATION_ERRORS = {
   FILE_TOO_LARGE: "File too large",
   FILE_TOO_LARGE_DETAIL: `Please select an image smaller than ${MAX_FILE_SIZE_MB}MB.`,
 } as const;
-
+// as const用来定义字面量类型，防止被修改

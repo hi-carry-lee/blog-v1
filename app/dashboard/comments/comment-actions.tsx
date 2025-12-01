@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Trash2, Check, X, AlertTriangle } from "lucide-react";
 import { deleteComment, approveComment } from "@/lib/actions/comment";
@@ -29,6 +30,7 @@ interface CommentActionsProps {
 
 export function CommentActions({ comment }: CommentActionsProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const { success, error } = useSemanticToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -37,7 +39,9 @@ export function CommentActions({ comment }: CommentActionsProps) {
       const result = await approveComment(comment.id, approved);
       if (result.success) {
         success(result.message || "Comment status updated");
-        window.location.reload();
+        startTransition(() => {
+          router.refresh();
+        });
       } else {
         error(result.error || "Failed to update comment status");
       }
@@ -49,7 +53,9 @@ export function CommentActions({ comment }: CommentActionsProps) {
       const result = await deleteComment(comment.id);
       if (result.success) {
         success(result.message || "Comment deleted successfully");
-        window.location.reload();
+        startTransition(() => {
+          router.refresh();
+        });
       } else {
         error(result.error || "Failed to delete comment");
       }
@@ -65,7 +71,7 @@ export function CommentActions({ comment }: CommentActionsProps) {
           size="sm"
           onClick={() => handleApprove(true)}
           disabled={isPending}
-          className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+          className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300 min-w-[90px]"
         >
           <Check className="w-4 h-4 mr-1" />
           Approve
@@ -76,7 +82,7 @@ export function CommentActions({ comment }: CommentActionsProps) {
           size="sm"
           onClick={() => handleApprove(false)}
           disabled={isPending}
-          className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+          className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300 min-w-[90px]"
         >
           <X className="w-4 h-4 mr-1" />
           Reject
@@ -89,7 +95,7 @@ export function CommentActions({ comment }: CommentActionsProps) {
             variant="outline"
             size="sm"
             disabled={isPending}
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 min-w-[80px]"
           >
             <Trash2 className="w-4 h-4 mr-1" />
             Delete

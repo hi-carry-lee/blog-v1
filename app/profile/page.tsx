@@ -170,7 +170,7 @@ export default function ProfilePage() {
                   <Image
                     key={currentImageUrl} // 使用 URL 作为 key，URL 变化时会自动更新
                     src={currentImageUrl}
-                    alt={userName || "User"}
+                    alt="User avatar"
                     width={120}
                     height={120}
                     className="rounded-full object-cover border-4 border-primary/20"

@@ -57,7 +57,7 @@ export default async function AboutPage() {
                       <div className="w-32 h-32 rounded-full overflow-hidden ring-2 ring-primary/20">
                         <Image
                           src={adminUser.image}
-                          alt={adminUser.name || "Admin"}
+                          alt="Admin avatar"
                           width={128}
                           height={128}
                           className="w-full h-full object-cover"
@@ -66,9 +66,7 @@ export default async function AboutPage() {
                     ) : (
                       <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
                         <span className="text-4xl font-bold text-primary">
-                          {getInitials(
-                            adminUser.name || adminUser.email || "Admin"
-                          )}
+                          {getInitials(adminUser.name || "Admin")}
                         </span>
                       </div>
                     )}

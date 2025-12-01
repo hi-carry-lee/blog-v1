@@ -58,19 +58,33 @@ export default async function CommentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Author</TableHead>
-                    <TableHead>Content</TableHead>
-                    <TableHead>Post</TableHead>
-                    <TableHead>Replies</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="px-4 md:px-6 min-w-[200px]">
+                      Author
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 min-w-[250px] max-w-md">
+                      Content
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 min-w-[180px] max-w-xs">
+                      Post
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 whitespace-nowrap w-[100px]">
+                      Replies
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 whitespace-nowrap w-[120px]">
+                      Status
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 whitespace-nowrap w-[140px]">
+                      Date
+                    </TableHead>
+                    <TableHead className="px-4 md:px-6 whitespace-nowrap w-[180px]">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {comments.map((comment) => (
                     <TableRow key={comment.id}>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 min-w-[200px]">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={comment.author.image || ""} />
@@ -90,26 +104,27 @@ export default async function CommentsPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <p className="text-foreground max-w-xs truncate">
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 min-w-[250px] max-w-md">
+                        <p className="text-foreground truncate">
                           {comment.content}
                         </p>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 min-w-[180px] max-w-xs">
                         <Link
                           href={`/posts/${comment.post.slug}`}
-                          className="text-primary hover:underline text-sm"
+                          className="text-primary hover:underline text-sm truncate block"
+                          title={comment.post.title}
                         >
                           {comment.post.title}
                         </Link>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap w-[100px]">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <MessageSquare className="w-4 h-4" />
                           <span>{comment._count.replies}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap w-[120px]">
                         <Badge
                           variant={comment.approved ? "default" : "secondary"}
                           className="text-xs"
@@ -117,14 +132,14 @@ export default async function CommentsPage() {
                           {comment.approved ? "Approved" : "Pending"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap w-[140px]">
                         <p className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.createdAt), {
                             addSuffix: true,
                           })}
                         </p>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 md:px-6 py-4 md:py-5 whitespace-nowrap w-[180px]">
                         <CommentActions comment={comment} />
                       </TableCell>
                     </TableRow>
