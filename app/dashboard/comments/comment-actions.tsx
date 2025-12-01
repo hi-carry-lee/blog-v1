@@ -29,12 +29,15 @@ interface CommentActionsProps {
 }
 
 export function CommentActions({ comment }: CommentActionsProps) {
+  // useTransition 是 React 18 的并发特性 Hook，用于将某些状态更新标记为非紧急，提升交互响应
+  // startTransition：函数，用于包装非紧急的状态更新
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { success, error } = useSemanticToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleApprove = (approved: boolean) => {
+    // 使用 startTransition 效果有限，仅仅是演示
     startTransition(async () => {
       const result = await approveComment(comment.id, approved);
       if (result.success) {

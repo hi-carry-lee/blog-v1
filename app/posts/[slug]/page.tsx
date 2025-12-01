@@ -1,10 +1,60 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getPublishedPostBySlug, incrementPostViews } from "@/lib/actions/post";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton";
 import { PostDetailContent } from "./post-detail-content";
+
+/**
+ * 生成页面的 SEO metadata
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const result = await getPublishedPostBySlug(slug);
+
+  if (!result.success || !result.post) {
+    return {
+      title: "Post Not Found",
+      description: "The post you're looking for doesn't exist.",
+    };
+  }
+
+  const post = result.post;
+  const title = post.metaTitle || post.title;
+  const description = post.metaDescription || post.brief;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      publishedTime: post.publishedAt?.toISOString(),
+      authors: [post.author.name],
+      images: post.coverImage
+        ? [
+            {
+              url: post.coverImage,
+              alt: post.title,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: post.coverImage ? [post.coverImage] : [],
+    },
+  };
+}
 
 export default async function PostDetailPage({
   params,
