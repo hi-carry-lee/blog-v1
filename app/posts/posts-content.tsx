@@ -72,8 +72,12 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
     <>
       {/* Search Result Info */}
       {useVectorSearch && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">
-          <Sparkles className="w-4 h-4 text-primary" />
+        <div
+          className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-4 py-3"
+          role="status"
+          aria-live="polite"
+        >
+          <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
           <span>
             AI-powered search results for{" "}
             <span className="font-semibold text-foreground">
@@ -94,7 +98,7 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
       {/* Login prompt for AI search */}
       {!isAuthenticated && Boolean(searchTerm.trim()) && (
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground bg-muted border border-border rounded-lg px-4 py-3">
-          <Info className="w-4 h-4" />
+          <Info className="w-4 h-4" aria-hidden="true" />
           <span>
             Showing keyword-based results.{" "}
             <Link
@@ -162,7 +166,7 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
                     {/* Meta Information */}
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
+                        <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>
                           {post.publishedAt
                             ? new Date(post.publishedAt).toLocaleDateString(
@@ -177,7 +181,7 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
+                        <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>{getReadingTime(post.content)} min read</span>
                       </div>
                     </div>
@@ -189,7 +193,10 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
 
           {/* Pagination */}
           {result.totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2">
+            <nav
+              aria-label="Pagination navigation"
+              className="flex justify-center items-center gap-2"
+            >
               {/* Previous Button */}
               {result.currentPage > 1 && (
                 <Link
@@ -198,9 +205,13 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
                   }${categorySlug ? `&category=${categorySlug}` : ""}${
                     tagSlug ? `&tag=${tagSlug}` : ""
                   }`}
+                  aria-label={`Go to previous page, page ${
+                    result.currentPage - 1
+                  }`}
                 >
                   <Button variant="ghost" size="icon" className="w-10 h-10">
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+                    <span className="sr-only">Previous page</span>
                   </Button>
                 </Link>
               )}
@@ -234,6 +245,10 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
                           }${categorySlug ? `&category=${categorySlug}` : ""}${
                             tagSlug ? `&tag=${tagSlug}` : ""
                           }`}
+                          aria-label={`Go to page ${pageNum}`}
+                          aria-current={
+                            result.currentPage === pageNum ? "page" : undefined
+                          }
                         >
                           <Button
                             variant={
@@ -260,13 +275,15 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
                   }${categorySlug ? `&category=${categorySlug}` : ""}${
                     tagSlug ? `&tag=${tagSlug}` : ""
                   }`}
+                  aria-label={`Go to next page, page ${result.currentPage + 1}`}
                 >
                   <Button variant="ghost" size="icon" className="w-10 h-10">
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                    <span className="sr-only">Next page</span>
                   </Button>
                 </Link>
               )}
-            </div>
+            </nav>
           )}
         </>
       ) : (

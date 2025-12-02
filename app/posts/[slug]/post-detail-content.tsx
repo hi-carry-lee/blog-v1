@@ -45,7 +45,7 @@ export async function PostDetailContent({ post }: PostDetailContentProps) {
       {/* Back Button */}
       <Link href="/posts">
         <Button variant="ghost" className="mb-6 -ml-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
           Back to Posts
         </Button>
       </Link>
@@ -98,7 +98,7 @@ export async function PostDetailContent({ post }: PostDetailContentProps) {
             <p className="font-semibold text-foreground">{post.author.name}</p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" aria-hidden="true" />
                 <span>
                   {post.publishedAt
                     ? new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -110,7 +110,7 @@ export async function PostDetailContent({ post }: PostDetailContentProps) {
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-4 h-4" aria-hidden="true" />
                 <span>{readingTime} min read</span>
               </div>
             </div>
@@ -119,7 +119,7 @@ export async function PostDetailContent({ post }: PostDetailContentProps) {
 
         {/* Views */}
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Eye className="w-4 h-4" />
+          <Eye className="w-4 h-4" aria-hidden="true" />
           <span className="text-sm">{post.views || 0} views</span>
         </div>
       </div>

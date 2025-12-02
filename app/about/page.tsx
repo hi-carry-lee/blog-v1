@@ -94,7 +94,7 @@ export default async function AboutPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Github className="w-5 h-5" />
+                      <Github className="w-5 h-5" aria-hidden="true" />
                     </Link>
                     <Link
                       href={socialLinks.twitter.url}
@@ -103,7 +103,7 @@ export default async function AboutPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Twitter className="w-5 h-5" />
+                      <Twitter className="w-5 h-5" aria-hidden="true" />
                     </Link>
                   </div>
 
@@ -113,6 +113,7 @@ export default async function AboutPage() {
                       href={profileConfig.portfolioUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`${profileConfig.portfolioLabel} (opens in new tab)`}
                     >
                       {profileConfig.portfolioLabel}
                     </Link>
@@ -165,15 +166,16 @@ export default async function AboutPage() {
                         target={link.external ? "_blank" : undefined}
                         rel={link.external ? "noopener noreferrer" : undefined}
                         className="flex items-center gap-3 p-4 border border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all group"
+                        aria-label={link.external ? `${link.title} (opens in new tab)` : link.title}
                       >
                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                          <Icon className="w-5 h-5 text-primary" />
+                          <Icon className="w-5 h-5 text-primary" aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-foreground flex items-center gap-1">
                             {link.title}
                             {link.external && (
-                              <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                              <ExternalLink className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
                             )}
                           </p>
                           <p className="text-sm text-muted-foreground truncate">
