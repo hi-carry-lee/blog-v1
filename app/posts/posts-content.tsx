@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   queryPublishedPosts,
   searchPostsWithFilters,
@@ -91,8 +92,18 @@ export async function PostsContent({ searchParams }: PostsContentProps) {
       )}
 
       {/* Filters */}
+      {/* 🔧 性能优化：PostFilters 使用 useSearchParams()，必须用 Suspense 包裹 */}
       <div className="mb-8">
-        <PostFilters categories={categories} tags={tags} />
+        <Suspense
+          fallback={
+            <div className="flex flex-wrap gap-3">
+              <div className="h-10 w-32 bg-muted animate-pulse rounded-lg" />
+              <div className="h-10 w-32 bg-muted animate-pulse rounded-lg" />
+            </div>
+          }
+        >
+          <PostFilters categories={categories} tags={tags} />
+        </Suspense>
       </div>
 
       {/* Login prompt for AI search */}

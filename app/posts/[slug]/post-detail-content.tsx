@@ -3,12 +3,31 @@ import { markdownToHtml } from "@/lib/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MarkdownContent } from "@/components/markdown-content";
-import { CommentSection } from "@/components/comment-section";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PostWithRelations } from "@/lib/actions/post";
+
+// 🚀 优化 2：动态导入评论区组件（减少首屏 JS）
+const CommentSection = dynamic(
+  () =>
+    import("@/components/comment-section").then((mod) => ({
+      default: mod.CommentSection,
+    })),
+  {
+    loading: () => (
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-foreground mb-6">Comments</h2>
+        <div className="animate-pulse space-y-4">
+          <div className="h-24 bg-muted rounded-lg"></div>
+          <div className="h-20 bg-muted rounded-lg"></div>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface PostDetailContentProps {
   post: PostWithRelations;

@@ -5,6 +5,19 @@
 
 import { searchPostsWithFilters } from "@/lib/actions/post";
 
+interface TestResult {
+  query: string;
+  expected: string;
+  threshold: number;
+  success: boolean;
+  resultCount?: number;
+  searchType?: string;
+  duration: number;
+  traditionalCount?: number;
+  vectorCount?: number;
+  error?: string;
+}
+
 const testCases = [
   {
     query: "摇床",
@@ -53,7 +66,7 @@ const testCases = [
 async function generateTestReport() {
   console.log("🧪 开始搜索功能测试...\n");
 
-  const results = [];
+  const results: TestResult[] = [];
 
   for (const testCase of testCases) {
     console.log("=".repeat(80));
@@ -108,14 +121,20 @@ async function generateTestReport() {
         });
       }
     } catch (error) {
-      console.log(`❌ 测试失败: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.log(`❌ 测试失败: ${errorMessage}`);
       results.push({
         query: testCase.query,
         expected: testCase.expected,
         threshold: testCase.threshold,
         success: false,
-        error: error.message,
+        error: errorMessage,
         duration: 0,
+        searchType: undefined,
+        resultCount: 0,
+        traditionalCount: 0,
+        vectorCount: 0,
       });
     }
 
@@ -128,9 +147,11 @@ async function generateTestReport() {
 
   const successCount = results.filter((r) => r.success).length;
   const totalCount = results.length;
-  const successRate = ((successCount / totalCount) * 100).toFixed(1);
+  const successRate = (successCount / totalCount) * 100;
 
-  console.log(`✅ 成功测试: ${successCount}/${totalCount} (${successRate}%)`);
+  console.log(
+    `✅ 成功测试: ${successCount}/${totalCount} (${successRate.toFixed(1)}%)`
+  );
   console.log(
     `⏱️ 平均耗时: ${(
       results.reduce((sum, r) => sum + r.duration, 0) / totalCount

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import UserAvatar from "./user-avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -36,8 +36,15 @@ export function Navbar() {
         </div>
 
         {/* Desktop Search Bar - Hidden on mobile */}
+        {/* 🔧 性能优化：SearchInput 使用 useSearchParams()，必须用 Suspense 包裹 */}
         <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
-          <SearchInput className="flex-1" />
+          <Suspense
+            fallback={
+              <div className="flex-1 h-10 bg-muted animate-pulse rounded-lg" />
+            }
+          >
+            <SearchInput className="flex-1" />
+          </Suspense>
         </div>
 
         {/* Desktop Navigation - Hidden on mobile */}
@@ -147,7 +154,14 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-4 space-y-4">
-            <SearchInput />
+            {/* 🔧 性能优化：SearchInput 使用 useSearchParams()，必须用 Suspense 包裹 */}
+            <Suspense
+              fallback={
+                <div className="h-10 bg-muted animate-pulse rounded-lg" />
+              }
+            >
+              <SearchInput />
+            </Suspense>
 
             {/* Mobile Navigation Links */}
             <nav className="flex flex-col space-y-3">
