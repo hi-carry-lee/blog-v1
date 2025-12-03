@@ -32,6 +32,7 @@ export async function getPostComments(postId: string) {
         parentId: null,
         approved: true, // 只显示已审核的评论
       },
+      // 限制三层嵌套评论查询，因为创建时已限制为3层
       include: {
         author: {
           select: {

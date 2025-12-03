@@ -8,7 +8,6 @@ import {
 import {
   insertEmbedding,
   batchInsertEmbeddings,
-  deleteEmbeddingsByPostId,
   searchSimilarEmbeddings,
 } from "../vector";
 import { prisma } from "../db";
