@@ -10,10 +10,32 @@ import {
 describe("Embedding 功能测试", () => {
   // 测试后清理资源
   afterAll(() => {
+    // 清理向量客户端连接
     cleanup();
   });
 
+  /*
+测试用例分类：
+A. generateEmbedding 函数（5个用例）
+  生成中文文本的 embedding
+  生成英文文本的 embedding
+  空文本应抛出错误
+  超长文本应抛出错误
+  不同文本应生成不同的 embedding
+B. batchGenerateEmbeddings 函数
+  批量生成 embeddings
+  空数组应返回空数组 
+  保持输入顺序 
+C. countTokens 函数（3个用例）
+  正确计算英文文本的 token 数量
+  正确计算中文文本的 token 数量
+  正确计算长文本的 token 数量
+D. 性能测试（2个用例）
+  单个 embedding 生成应在合理时间内完成
+  批量生成应比单个生成更高效
+*/
   describe("generateEmbedding 函数", () => {
+    // it()：定义具体测试用例，描述测试行为，函数包含测试逻辑
     it("应该成功生成中文文本的 embedding", async () => {
       const testText = "这是一个测试文本，用于验证 embedding 生成功能。";
 
@@ -22,6 +44,7 @@ describe("Embedding 功能测试", () => {
       const endTime = Date.now();
 
       // 验证结果
+      // toBeDefined() 是 Vitest/Jest 的断言，用于验证值不是 undefined，null值可以通过
       expect(embedding).toBeDefined();
       expect(Array.isArray(embedding)).toBe(true);
       expect(embedding.length).toBe(1536); // text-embedding-3-small 的维度
@@ -72,6 +95,7 @@ describe("Embedding 功能测试", () => {
     });
 
     it("应该对超长文本抛出错误", async () => {
+      // repeat: 来自ES6的字符串扩展，用于重复字符串
       const longText = "这是一个很长的文本。".repeat(2000); // 创建超长文本
       const tokenCount = countTokens(longText);
 

@@ -7,7 +7,7 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(cuid()) // @ 开头：字段级属性
   name          String
   email         String    @unique(map: "user_email_idx")
   emailVerified DateTime? @db.Timestamp(6)
@@ -21,7 +21,7 @@ model User {
   posts         Post[]
   comments      Comment[]
 
-  @@map("users")
+  @@map("users") // @@ 开头：模型级属性,将模型名 User 映射到数据库表名 users
 }
 
 model Account {
