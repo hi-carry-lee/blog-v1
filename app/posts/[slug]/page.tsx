@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPublishedPostBySlug, incrementPostViews } from "@/lib/actions/post";
+import { getPublishedPostBySlug } from "@/lib/db-access/post";
+import { incrementPostViews } from "@/lib/actions/post";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton";

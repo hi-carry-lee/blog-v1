@@ -1,4 +1,4 @@
-import { queryAllPosts, searchPostsWithFilters } from "@/lib/actions/post";
+import { queryAllPosts, searchPostsWithFilters } from "@/lib/db-access/post";
 import PostTable from "./post-table";
 import { Sparkles } from "lucide-react";
 

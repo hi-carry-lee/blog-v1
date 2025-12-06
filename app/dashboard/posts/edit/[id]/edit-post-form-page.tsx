@@ -17,12 +17,8 @@ import {
 } from "@/components/ui/form";
 import { postSchema } from "@/lib/zod-validations";
 import { z } from "zod";
-import {
-  updatePost,
-  validatePostSlug,
-  getAllCategories,
-  getAllTags,
-} from "@/lib/actions/post";
+import { updatePost, validatePostSlug } from "@/lib/actions/post";
+import { getAllCategories, getAllTags } from "@/lib/db-access/post";
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
 import { Loader2, X, ArrowLeft, Camera } from "lucide-react";
@@ -30,7 +26,7 @@ import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 import { logger } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import { PostWithRelations } from "@/lib/actions/post";
+import type { PostWithRelations } from "@/lib/db-access/post";
 import Image from "next/image";
 import { uploadImageFile } from "@/lib/utils/upload";
 import { validateImageFile } from "@/lib/utils/file-validation";

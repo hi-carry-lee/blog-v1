@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MessageSquare, Crown, User } from "lucide-react";
-import { UserWithPosts } from "@/lib/actions/user";
+import type { UserWithPosts } from "@/lib/db-access/user";
 import Pagination from "@/components/pagination";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";
 

@@ -1,4 +1,4 @@
-import { TagWithPosts, queryAllTags } from "@/lib/actions/tag";
+import { TagWithPosts, queryAllTags } from "@/lib/db-access/tag";
 import TagTable from "./tag-table";
 
 type Props = {

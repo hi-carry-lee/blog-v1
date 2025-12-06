@@ -1,4 +1,4 @@
-import { CategoryWithPosts, queryAllCategories } from "@/lib/actions/category";
+import { CategoryWithPosts, queryAllCategories } from "@/lib/db-access/category";
 import CategoryTable from "./category-table";
 
 type Props = {

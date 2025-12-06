@@ -1,4 +1,4 @@
-import { getDashboardStats, getRecentPosts } from "@/lib/actions/post";
+import { getDashboardStats, getRecentPosts } from "@/lib/db-access/post";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/form";
 import { postSchema } from "@/lib/zod-validations";
 import { z } from "zod";
-import { createPost, getAllCategories, getAllTags } from "@/lib/actions/post";
+import { createPost } from "@/lib/actions/post";
+import { getAllCategories, getAllTags } from "@/lib/db-access/post";
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
 import { Loader2, X, ArrowLeft, Camera, Wand2 } from "lucide-react";

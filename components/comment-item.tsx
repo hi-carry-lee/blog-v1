@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CommentWithAuthor } from "@/lib/actions/comment";
+import type { CommentWithAuthor } from "@/lib/db-access/comment";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { useSession } from "next-auth/react";

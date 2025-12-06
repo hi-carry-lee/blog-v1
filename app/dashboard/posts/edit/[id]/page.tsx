@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPostById } from "@/lib/actions/post";
+import { getPostById } from "@/lib/db-access/post";
 import EditPostFormPage from "@/app/dashboard/posts/edit/[id]/edit-post-form-page";
 
 type Props = {

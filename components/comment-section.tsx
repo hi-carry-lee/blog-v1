@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { CommentWithAuthor, createComment } from "@/lib/actions/comment";
+import type { CommentWithAuthor } from "@/lib/db-access/comment";
+import { createComment } from "@/lib/actions/comment";
 import { CommentItem } from "./comment-item";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

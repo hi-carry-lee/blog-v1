@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Github, Twitter, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { getAdminUser } from "@/lib/actions/user";
+import { getAdminUser } from "@/lib/db-access/user";
 import { getInitials } from "@/lib/utils";
 import {
   skills,

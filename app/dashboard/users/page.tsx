@@ -1,4 +1,4 @@
-import { UserWithPosts, queryAllUsers } from "@/lib/actions/user";
+import { UserWithPosts, queryAllUsers } from "@/lib/db-access/user";
 import UserTable from "./user-table";
 
 type Props = {

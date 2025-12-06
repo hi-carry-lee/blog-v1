@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search, Eye, EyeOff } from "lucide-react";
-import {
-  PostWithRelations,
-  deletePost,
-  togglePublishPost,
-} from "@/lib/actions/post";
+import type { PostWithRelations } from "@/lib/db-access/post";
+import { deletePost, togglePublishPost } from "@/lib/actions/post";
 import Pagination from "@/components/pagination";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useSemanticToast } from "@/lib/hooks/useSemanticToast";

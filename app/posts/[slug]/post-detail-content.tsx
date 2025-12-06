@@ -1,4 +1,4 @@
-import { getPostComments } from "@/lib/actions/comment";
+import { getPostComments } from "@/lib/db-access/comment";
 import { markdownToHtml } from "@/lib/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PostWithRelations } from "@/lib/actions/post";
+import type { PostWithRelations } from "@/lib/db-access/post";
 
 // 🚀 优化 2：动态导入评论区组件（减少首屏 JS）
 const CommentSection = dynamic(
