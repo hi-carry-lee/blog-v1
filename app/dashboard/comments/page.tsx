@@ -1,4 +1,4 @@
-import { getAllComments } from "@/lib/db-access/comment";
+import { CommentWithAuthor, getAllComments } from "@/lib/db-access/comment";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -82,7 +82,7 @@ export default async function CommentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {comments.map((comment) => (
+                  {comments.map((comment: CommentWithAuthor) => (
                     <TableRow key={comment.id}>
                       <TableCell className="px-4 md:px-6 py-4 md:py-5 min-w-[200px]">
                         <div className="flex items-center gap-3">

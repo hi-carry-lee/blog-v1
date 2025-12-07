@@ -12,9 +12,19 @@ export type CommentWithAuthor = {
     id: string;
     name: string;
     image: string | null;
+    email?: string;
   };
   parentId: string | null;
-  replies: CommentWithAuthor[];
+  replies?: CommentWithAuthor[];
+  post: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  _count: {
+    replies: number;
+  };
+  approved: boolean | null;
 };
 
 /**
@@ -138,4 +148,3 @@ export async function getAllComments() {
     };
   }
 }
-
