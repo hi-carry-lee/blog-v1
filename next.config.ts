@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 关键配置：告诉 Next.js 不要打包这些包，直接使用 node_modules 中的版本，升级Nextjs16之后遇到的问题：因为使用tiktoken，Nextjs16的tuebo导致tiktoken无法被正确打包，所以需要告诉Nextjs不要打包tiktoken
+  serverExternalPackages: ["tiktoken", "@dqbd/tiktoken"],
+
   /* config options here */
 
   // 🚀 生产环境优化：自动移除 console.log

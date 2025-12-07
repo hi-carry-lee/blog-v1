@@ -64,3 +64,42 @@ export const processEmbedding = inngest.createFunction(
     logger.info("Embedding generation completed", { postId });
   }
 );
+
+// 清理过期的频率限制记录
+export const cleanupRateLimitRecords = inngest.createFunction(
+  {
+    id: "cleanup-rate-limit-records",
+    name: "Cleanup Rate Limit Records",
+    retries: 1, // 如果失败，不重试
+    concurrency: {
+      limit: 1, // 限制为单实例运行
+    },
+  },
+  { cron: "0 0 * * 1" }, // 每周一凌晨 0 点触发
+  async ({ step, logger }) => {
+    logger.info("Starting cleanup of expired rate limit records");
+
+    await step.run("delete-expired-records", async () => {
+      const now = new Date();
+
+      try {
+        const deleted = await prisma.rateLimit.deleteMany({
+          where: {
+            expiresAt: { lt: now }, // 删除过期记录
+          },
+        });
+
+        logger.info("Expired rate limit records cleaned up", {
+          deletedCount: deleted.count,
+        });
+      } catch (error) {
+        logger.error("Failed to clean up expired rate limit records", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error; // 抛出错误以便记录日志
+      }
+    });
+
+    logger.info("Cleanup of expired rate limit records completed");
+  }
+);

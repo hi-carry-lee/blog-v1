@@ -132,7 +132,8 @@ export async function createPost(data: PostFormData) {
 
     // 创建文章后，触发 embedding 生成
     try {
-      // 向 Inngest 服务发送一个事件，相当于"触发信号"
+      // 这里是向Inngest服务发送一个事件，相当于"触发信号"
+      // 然后由Inngest云服务，向当前应用的/api/inngest端点发出HTTP请求
       await inngest.send({
         name: "post/embedding.generate",
         data: { postId: newPost.id },
