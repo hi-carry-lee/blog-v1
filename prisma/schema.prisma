@@ -4,22 +4,26 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // 这个警告可能来自IDE（VS Code/Cursor）的 Prisma 语言服务器可能使用了不同版本的验证规则，或扩展版本与项目版本不一致
+  // 当前Prisma是6.x，如果Prisma extention是7，那么下面的代码会提示警告
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid()) // @ 开头：字段级属性
-  name          String
-  email         String    @unique(map: "user_email_idx")
-  emailVerified DateTime? @db.Timestamp(6)
-  image         String?
-  password      String?
-  role          String    @default("user")
-  address       Json?     @db.Json
-  createdAt     DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt     DateTime  @updatedAt
-  account       Account[]
-  posts         Post[]
-  comments      Comment[]
+  id                  String               @id @default(cuid()) // @ 开头：字段级属性
+  name                String
+  email               String               @unique(map: "user_email_idx")
+  emailVerified       DateTime?            @db.Timestamp(6)
+  image               String?
+  password            String?
+  role                String               @default("user")
+  address             Json?                @db.Json
+  createdAt           DateTime             @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime             @updatedAt
+  account             Account[]
+  posts               Post[]
+  comments            Comment[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users") // @@ 开头：模型级属性,将模型名 User 映射到数据库表名 users
 }
@@ -158,4 +162,20 @@ model PostEmbedding {
 
   @@index([postId])
   @@map("post_embeddings")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  token     String    @unique // 唯一 token，用于验证
+  expiresAt DateTime  @db.Timestamp(6) // 过期时间
+  usedAt    DateTime? @map("used_at") @db.Timestamp(6) // 可选：标记是否已使用
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token]) // 为 token 字段添加索引，提高查询性能
+  @@index([userId]) // 为 userId 添加索引
+  @@map("password_reset_tokens")
 }

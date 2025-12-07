@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import { loginSchema, type LoginFormData } from "@/lib/zod-validations";
 import { useCredentialsLogin } from "@/lib/hooks/useCredentialsLogin";
@@ -22,13 +23,14 @@ import { useOAuth } from "@/lib/hooks/useOAuth";
 
 /**
  * Login Form Component
- * 
+ *
  * 🔧 性能优化：独立的客户端组件
  * - 使用 useSearchParams() 获取回调 URL
  * - 被 page.tsx 中的 Suspense 包裹，支持静态优化
  * - 包含所有表单逻辑、验证和第三方登录
  */
 export function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
@@ -48,7 +50,10 @@ export function LoginForm() {
   };
 
   const handleForgotPassword = () => {
-    console.log("Forgot password clicked");
+    // 导航到一个新的页面，并将该页面添加到浏览器的历史记录中
+    // replace，不会将该页面添加到浏览器的历史记录中
+    // router.prefetch	N/A	提前加载页面内容，优化性能
+    router.push("/forgot-password");
   };
 
   return (

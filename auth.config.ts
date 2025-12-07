@@ -16,6 +16,8 @@ export const authConfig: NextAuthConfig = {
         "/",
         "/login",
         "/register",
+        "/forgot-password",
+        "/reset-password",
         // 未来可能添加的公共页面
         "/about",
         "/contact",

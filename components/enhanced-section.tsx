@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   SiNextdotjs,
   SiPrisma,
@@ -12,6 +12,16 @@ import { Database, Workflow, FileText } from "lucide-react";
 
 export default function EnhancedSections() {
   const [viewMode, setViewMode] = useState("before"); // "before" or "after"
+
+  // 自动切换 Before/After 视图
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setViewMode((prev) => (prev === "before" ? "after" : "before"));
+    }, 5000); // 每 5 秒切换一次
+
+    // 组件卸载时（比如切换到其他页面）清理定时器，防止内存泄漏
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-20">
@@ -54,7 +64,7 @@ export default function EnhancedSections() {
             </div>
 
             {viewMode === "before" ? (
-              <div className="space-y-4">
+              <div className="space-y-4 transition-opacity duration-300">
                 <div className="border-2 border-dashed border-border rounded-lg p-8 bg-muted/30">
                   <div className="w-full h-48 bg-muted rounded flex items-center justify-center text-muted-foreground text-center px-4">
                     You need to spend time finding or creating a cover image,
@@ -74,7 +84,7 @@ export default function EnhancedSections() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 transition-opacity duration-300">
                 <div className="border-2 border-primary/30 rounded-lg p-8 bg-gradient-to-br from-primary/10 to-accent/10">
                   <div className="w-full h-48 bg-gradient-to-r from-primary to-chart-2 rounded flex items-center justify-center text-primary-foreground text-lg font-semibold">
                     🎨 AI-Generated Concept Art: Neural Networks

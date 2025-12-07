@@ -28,10 +28,10 @@ export function ThemeProvider({
 }: React.ComponentProps<typeof NextThemesProvider>) {
   return (
     <NextThemesProvider
-      attribute="class"           // 使用 class 属性（配合 Tailwind CSS）
-      defaultTheme="system"       // 默认主题：system/light/dark
-      enableSystem               // 启用系统主题检测
-      disableTransitionOnChange  // 禁用主题切换时的过渡动画（可选）
+      attribute="class" // 使用 class 属性（配合 Tailwind CSS）
+      defaultTheme="system" // 默认主题：system/light/dark
+      enableSystem // 启用系统主题检测
+      disableTransitionOnChange // 禁用主题切换时的过渡动画（可选）
       {...props}
     >
       {children}
@@ -56,9 +56,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* ⚠️ 重要：必须添加 suppressHydrationWarning */}
       <body>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
@@ -66,6 +64,7 @@ export default function RootLayout({
 ```
 
 **关键点：**
+
 - ✅ `<html>` 标签必须添加 `suppressHydrationWarning` 属性
 - ✅ `ThemeProvider` 必须包裹整个应用
 
@@ -144,27 +143,28 @@ export function ThemeToggle() {
 
 ### ThemeProvider 属性
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `attribute` | `string` | `"class"` | 应用到 HTML 元素的属性名（通常为 `"class"` 配合 Tailwind） |
-| `defaultTheme` | `"system" \| "light" \| "dark"` | `"system"` | 默认主题 |
-| `enableSystem` | `boolean` | `true` | 是否启用系统主题检测 |
-| `disableTransitionOnChange` | `boolean` | `false` | 是否禁用主题切换时的过渡动画 |
-| `storageKey` | `string` | `"theme"` | localStorage 存储键名 |
-| `forcedTheme` | `string` | `undefined` | 强制使用某个主题（用于特定页面） |
+| 属性                        | 类型                            | 默认值      | 说明                                                       |
+| --------------------------- | ------------------------------- | ----------- | ---------------------------------------------------------- |
+| `attribute`                 | `string`                        | `"class"`   | 应用到 HTML 元素的属性名（通常为 `"class"` 配合 Tailwind） |
+| `defaultTheme`              | `"system" \| "light" \| "dark"` | `"system"`  | 默认主题                                                   |
+| `enableSystem`              | `boolean`                       | `true`      | 是否启用系统主题检测                                       |
+| `disableTransitionOnChange` | `boolean`                       | `false`     | 是否禁用主题切换时的过渡动画                               |
+| `storageKey`                | `string`                        | `"theme"`   | localStorage 存储键名                                      |
+| `forcedTheme`               | `string`                        | `undefined` | 强制使用某个主题（用于特定页面）                           |
 
 ### useTheme Hook 返回值
 
 ```tsx
 const {
-  theme,          // 当前主题："light" | "dark" | "system" | undefined
-  setTheme,       // 设置主题的函数
-  resolvedTheme,  // 解析后的主题："light" | "dark"（会自动解析 system）
-  systemTheme,    // 系统主题："light" | "dark"
+  theme, // 当前主题："light" | "dark" | "system" | undefined
+  setTheme, // 设置主题的函数
+  resolvedTheme, // 解析后的主题："light" | "dark"（会自动解析 system）
+  systemTheme, // 系统主题："light" | "dark"
 } = useTheme();
 ```
 
 **注意事项：**
+
 - `theme` 在 hydration 之前可能是 `undefined`
 - `resolvedTheme` 会自动将 `"system"` 解析为实际主题
 - 始终使用 `mounted` 状态检查来避免 hydration 错误
@@ -178,9 +178,9 @@ const {
 ```js
 // tailwind.config.js (v3)
 module.exports = {
-  darkMode: 'class', // 使用 class 策略
+  darkMode: "class", // 使用 class 策略
   // ...
-}
+};
 ```
 
 ```css
@@ -207,9 +207,7 @@ module.exports = {
 ### 3. 在 JSX 中使用 Tailwind 类
 
 ```tsx
-<div className="bg-white dark:bg-black text-black dark:text-white">
-  内容
-</div>
+<div className="bg-white dark:bg-black text-black dark:text-white">内容</div>
 ```
 
 ## ⚠️ 常见问题与解决方案
@@ -217,15 +215,18 @@ module.exports = {
 ### 问题 1: Hydration 错误
 
 **错误信息：**
-```
+
+```text
 Hydration failed because the server rendered HTML didn't match the client
 ```
 
 **原因：**
+
 - 组件在服务端和客户端渲染的结果不一致
 - `useTheme()` 在服务端返回 `undefined`，客户端返回实际主题值
 
 **解决方案：**
+
 1. ✅ 在 `<html>` 标签添加 `suppressHydrationWarning`
 2. ✅ 使用 `mounted` 状态检查
 3. ✅ 在 `mounted` 之前显示占位符
@@ -233,22 +234,24 @@ Hydration failed because the server rendered HTML didn't match the client
 ### 问题 2: 主题切换后页面闪烁
 
 **原因：**
+
 - 主题切换时 CSS 过渡动画导致的视觉闪烁
 
 **解决方案：**
+
 ```tsx
-<ThemeProvider disableTransitionOnChange>
-  {children}
-</ThemeProvider>
+<ThemeProvider disableTransitionOnChange>{children}</ThemeProvider>
 ```
 
 ### 问题 3: 系统主题检测不工作
 
 **原因：**
+
 - `enableSystem` 未启用
 - 浏览器不支持 `prefers-color-scheme`
 
 **解决方案：**
+
 ```tsx
 <ThemeProvider enableSystem defaultTheme="system">
   {children}
@@ -258,22 +261,28 @@ Hydration failed because the server rendered HTML didn't match the client
 ### 问题 4: 主题切换按钮显示错误图标
 
 **原因：**
+
 - 没有处理 `mounted` 状态
 - 直接使用 `theme` 值进行条件渲染
 
 **解决方案：**
+
 ```tsx
 // ❌ 错误做法
-{theme === "dark" ? <Sun /> : <Moon />}
+{
+  theme === "dark" ? <Sun /> : <Moon />;
+}
 
 // ✅ 正确做法
-{!mounted ? (
-  <Moon /> // 默认占位符
-) : theme === "dark" ? (
-  <Sun />
-) : (
-  <Moon />
-)}
+{
+  !mounted ? (
+    <Moon /> // 默认占位符
+  ) : theme === "dark" ? (
+    <Sun />
+  ) : (
+    <Moon />
+  );
+}
 ```
 
 ## 📝 完整示例
@@ -405,4 +414,3 @@ export { Toaster };
 ---
 
 **总结：** 使用 next-themes 的关键是正确处理 hydration，确保服务端和客户端渲染一致。始终记住使用 `mounted` 状态检查！
-
