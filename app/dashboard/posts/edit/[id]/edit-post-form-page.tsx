@@ -18,7 +18,6 @@ import {
 import { postSchema } from "@/lib/zod-validations";
 import { z } from "zod";
 import { updatePost, validatePostSlug } from "@/lib/actions/post";
-import { getAllCategories, getAllTags } from "@/lib/db-access/post";
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
 import { Loader2, X, ArrowLeft, Camera } from "lucide-react";
@@ -50,12 +49,16 @@ type Tag = {
 
 type EditPostFormPageProps = {
   post: PostWithRelations;
+  categories: Category[];
+  tags: Tag[];
 };
 
-export default function EditPostFormPage({ post }: EditPostFormPageProps) {
+export default function EditPostFormPage({
+  post,
+  categories,
+  tags,
+}: EditPostFormPageProps) {
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>("");
   const { success, error } = useSemanticToast();
@@ -86,31 +89,6 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
       setPreviewImageUrl(coverImageValue);
     }
   }, [form, previewImageUrl]);
-
-  // 加载分类和标签
-  useEffect(() => {
-    const loadData = async () => {
-      const [categoriesRes, tagsRes] = await Promise.all([
-        getAllCategories(),
-        getAllTags(),
-      ]);
-
-      if (categoriesRes.success) {
-        setCategories(categoriesRes.categories);
-      }
-
-      if (tagsRes.success) {
-        setTags(tagsRes.tags);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  // 移除这个 useEffect，不再需要同步 selectedTags
-  // useEffect(() => {
-  //   setSelectedTags(post.tags.map((tag) => tag.id));
-  // }, [post.tags]);
 
   // 自动生成 slug
   const handleTitleChange = (title: string) => {
@@ -527,7 +505,7 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
                             className="rounded"
                           />
                         </FormControl>
-                        <FormLabel className="!mt-0 cursor-pointer">
+                        <FormLabel className="mt-0! cursor-pointer">
                           Published
                         </FormLabel>
                       </FormItem>
@@ -548,7 +526,7 @@ export default function EditPostFormPage({ post }: EditPostFormPageProps) {
                             className="rounded"
                           />
                         </FormControl>
-                        <FormLabel className="!mt-0 cursor-pointer">
+                        <FormLabel className="mt-0! cursor-pointer">
                           Featured
                         </FormLabel>
                       </FormItem>
