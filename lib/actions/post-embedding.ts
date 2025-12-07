@@ -27,6 +27,7 @@ export async function generatePostEmbeddings(post: Post) {
     const { id, title, content } = post;
 
     // 1. 生成标题 embedding（总是单独一条）
+    logger.info(`Generating embedding for post ${post.id} - title`);
     const titleEmbedding = await generateEmbedding(title);
     const titleTokens = countTokens(title);
 
@@ -37,6 +38,7 @@ export async function generatePostEmbeddings(post: Post) {
       embedding: titleEmbedding,
       tokenCount: titleTokens,
     });
+    logger.info("Title Embedding inserted");
 
     // 2. 处理正文：检查是否需要分块
     const contentTokens = countTokens(content);
@@ -51,6 +53,7 @@ export async function generatePostEmbeddings(post: Post) {
         embedding: contentEmbedding,
         tokenCount: contentTokens,
       });
+      logger.info("Content Embedding inserted");
     } else {
       // 正文较长，需要分块
       const chunks = chunkText(content, {
@@ -73,6 +76,7 @@ export async function generatePostEmbeddings(post: Post) {
           tokenCount: chunk.tokenCount,
         }))
       );
+      logger.info("Chunk Embeddings inserted");
     }
   } catch (error) {
     logger.error(`Failed to generate embeddings for post ${post.id}:`, error);

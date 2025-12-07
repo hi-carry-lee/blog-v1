@@ -18,7 +18,7 @@ import {
 import { postSchema } from "@/lib/zod-validations";
 import { z } from "zod";
 import { createPost } from "@/lib/actions/post";
-import { getAllCategories, getAllTags } from "@/lib/db-access/post";
+
 import { useEffect, useState, useRef } from "react";
 import { generateSlug } from "@/lib/slug-helper";
 import { Loader2, X, ArrowLeft, Camera, Wand2 } from "lucide-react";
@@ -50,9 +50,16 @@ type Tag = {
   slug: string;
 };
 
-export default function PostFormPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+export default function PostFormPage({
+  categoriesProps,
+  tagsProps,
+}: {
+  categoriesProps: Category[];
+  tagsProps: Tag[];
+}) {
+  const [categories, setCategories] = useState<Category[]>(categoriesProps);
+  const [tags, setTags] = useState<Tag[]>(tagsProps);
+
   const [selectedTags] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
@@ -89,26 +96,6 @@ export default function PostFormPage() {
       setPreviewImageUrl(coverImageValue);
     }
   }, [form, previewImageUrl]);
-
-  // 加载分类和标签
-  useEffect(() => {
-    const loadData = async () => {
-      const [categoriesRes, tagsRes] = await Promise.all([
-        getAllCategories(),
-        getAllTags(),
-      ]);
-
-      if (categoriesRes.success) {
-        setCategories(categoriesRes.categories);
-      }
-
-      if (tagsRes.success) {
-        setTags(tagsRes.tags);
-      }
-    };
-
-    loadData();
-  }, []);
 
   // 自动生成 slug
   const handleTitleChange = (title: string) => {
@@ -522,7 +509,7 @@ export default function PostFormPage() {
                                   isGeneratingBrief ||
                                   !form.getValues("brief")?.trim()
                                 }
-                                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                className="flex-1 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
                               >
                                 {isGeneratingCover ? (
                                   <>
@@ -587,7 +574,7 @@ export default function PostFormPage() {
                               isGeneratingBrief ||
                               isGeneratingCover
                             }
-                            className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                            className="bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
                           >
                             {isGeneratingBrief ? (
                               <>
@@ -747,7 +734,7 @@ export default function PostFormPage() {
                             className="rounded"
                           />
                         </FormControl>
-                        <FormLabel className="!mt-0 cursor-pointer">
+                        <FormLabel className="mt-0! cursor-pointer">
                           Published
                         </FormLabel>
                       </FormItem>
@@ -768,7 +755,7 @@ export default function PostFormPage() {
                             className="rounded"
                           />
                         </FormControl>
-                        <FormLabel className="!mt-0 cursor-pointer">
+                        <FormLabel className="mt-0! cursor-pointer">
                           Featured
                         </FormLabel>
                       </FormItem>

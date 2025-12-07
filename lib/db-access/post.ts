@@ -820,4 +820,3 @@ export async function searchPostsWithFilters(
     };
   }
 }
-
